@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <io.vov.vitamio.widget.CenterLayout
+        android:id="@+id/centerlayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/video_height"
+        android:orientation="vertical" >
+
+        <io.vov.vitamio.widget.VideoView
+            android:id="@+id/video"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <!--前期加载 -->
+        <com.dinuscxj.progressbar.CircleProgressBar
+            android:id="@+id/pb_before"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true" />
+        <!--重播-->
+        <ImageView
+            android:id="@+id/iv_resume_start"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/mediacontroller_play"
+            android:scaleType="fitXY"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:visibility="gone"/>
+    </io.vov.vitamio.widget.CenterLayout>
+
+    <io.vov.vitamio.widget.MediaController
+        android:id="@+id/media_controller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/centerlayout"
+        android:visibility="gone">
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="horizontal"
+           android:gravity="center">
+           <ImageButton
+               android:id="@+id/mediacontroller_play_pause"
+               android:layout_width="40dp"
+               android:layout_height="40dp"
+               android:src="@drawable/mediacontroller_pause"
+               android:scaleType="fitXY"/>
+           <TextView
+               android:id="@+id/mediacontroller_time_current"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="00:00"
+               android:textColor="@color/colorAccent"
+               android:layout_marginLeft="3dp"/>
+           <!--缓冲进度 观看进度-->
+           <SeekBar
+               android:id="@+id/mediacontroller_seekbar"
+               android:layout_width="0dp"
+               android:layout_height="10dp"
+               android:layout_weight="1"
+               android:progressDrawable="@drawable/sb_bar"
+               style="@android:style/Widget.ProgressBar.Horizontal"  />
+
+           <TextView
+               android:id="@+id/mediacontroller_time_total"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="00:00"
+               android:textColor="@color/colorAccent"/>
+
+           <TextView
+               android:id="@+id/tv_full_layout"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:padding="5dp"
+               android:text="全屏"
+               android:textColor="@color/colorAccent"/>
+       </LinearLayout>
+    </io.vov.vitamio.widget.MediaController>
+
+
+</RelativeLayout>

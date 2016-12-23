@@ -6,23 +6,30 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import com.lxf.video.online.OnlineVideoActivity;
+import com.lxf.video.online.ExoplayerOnlineVideoActivity;
+import com.lxf.video.online.VitamioOnlineVideoActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    private TextView tvPlayVideo;
+    private TextView tvVitamioPlayVideo;            //vitamio
+    private TextView tvExoplayerPlayVideo;          //exoplayer
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tvPlayVideo = (TextView) findViewById(R.id.tv_play_video);
-        tvPlayVideo.setOnClickListener(this);
+        tvVitamioPlayVideo = (TextView) findViewById(R.id.tv_vitamio_play_video);
+        tvVitamioPlayVideo.setOnClickListener(this);
+        tvExoplayerPlayVideo = (TextView) findViewById(R.id.tv_exoplayer_play_video);
+        tvExoplayerPlayVideo.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.tv_play_video:
-                startActivity(new Intent(this, OnlineVideoActivity.class));
+            case R.id.tv_vitamio_play_video:
+                startActivity(new Intent(this, VitamioOnlineVideoActivity.class));
+                break;
+            case R.id.tv_exoplayer_play_video:
+                startActivity(new Intent(this, ExoplayerOnlineVideoActivity.class));
                 break;
         }
     }

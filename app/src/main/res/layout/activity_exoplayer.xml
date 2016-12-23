@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/video_height"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/rv_video"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/video_height">
+
+        <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+            android:id="@+id/simpleExoPlayerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:resize_mode="fill" />
+
+        <!--重播-->
+        <ImageView
+            android:id="@+id/iv_resume_start"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:scaleType="fitXY"
+            android:src="@drawable/mediacontroller_play"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+</LinearLayout>

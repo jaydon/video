@@ -28,7 +28,7 @@ import io.vov.vitamio.widget.VideoView;
  * Date: 2016-12-19
  * Time: 21:39
  */
-public class OnlineVideoActivity extends AppCompatActivity implements View.OnClickListener, MediaPlayer.OnInfoListener, MediaPlayer.OnBufferingUpdateListener {
+public class VitamioOnlineVideoActivity extends AppCompatActivity implements View.OnClickListener, MediaPlayer.OnInfoListener, MediaPlayer.OnBufferingUpdateListener {
     private VideoView video;
     private CircleProgressBar pbBefore;
     private TextView tvFullLayout;
@@ -44,7 +44,7 @@ public class OnlineVideoActivity extends AppCompatActivity implements View.OnCli
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Vitamio.isInitialized(getApplicationContext());
-        setContentView(R.layout.activity_online_video);
+        setContentView(R.layout.activity_vitamio);
 
         video = (VideoView) findViewById(R.id.video);
         pbBefore = (CircleProgressBar) findViewById(R.id.pb_before);
@@ -70,6 +70,13 @@ public class OnlineVideoActivity extends AppCompatActivity implements View.OnCli
                 ivResumeStart.setVisibility(View.VISIBLE);
             }
         });
+        //注册一个回调函数，在异步操作调用过程中发生错误时调用。例如视频打开失败。
+        video.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                return false;
+            }
+        });
         video.requestFocus();
         video.setOnInfoListener(this);
         video.setOnBufferingUpdateListener(this);
@@ -90,18 +97,20 @@ public class OnlineVideoActivity extends AppCompatActivity implements View.OnCli
     @Override
     public boolean onInfo(MediaPlayer mp, int what, int extra) {
         switch (what) {
+            //MediaPlayer暂停播放等待缓冲更多数据。
             case MediaPlayer.MEDIA_INFO_BUFFERING_START:
                 if(video.isPlaying()) {
                     video.pause();
                 }
+                bufferingStart();
                 break;
+            //MediaPlayer在缓冲完后继续播放。
             case MediaPlayer.MEDIA_INFO_BUFFERING_END:
                 bufferingEnd();
                 break;
             case MediaPlayer.MEDIA_INFO_DOWNLOAD_RATE_CHANGED:
                 break;
             case MediaPlayer.MEDIA_INFO_FILE_OPEN_OK:
-                bufferingStart();
                 break;
         }
         return true;

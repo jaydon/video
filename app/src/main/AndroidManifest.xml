@@ -21,7 +21,14 @@
         </activity>
 
         <!--在线播放视频-->
-        <activity android:name=".online.OnlineVideoActivity"
+        <activity android:name=".online.VitamioOnlineVideoActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="stateAlwaysHidden"
+            />
+
+        <!--在线播放视频-->
+        <activity android:name=".online.ExoplayerOnlineVideoActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:launchMode="singleTop"
             android:windowSoftInputMode="stateAlwaysHidden"

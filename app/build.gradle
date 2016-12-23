@@ -27,6 +27,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.dinuscxj:circleprogressbar:1.1.1'
     compile 'com.danikula:videocache:2.6.4'
+    compile 'com.google.android.exoplayer:exoplayer:r2.1.1'
     testCompile 'junit:junit:4.12'
     compile project(path: ':InitActivity')
 }

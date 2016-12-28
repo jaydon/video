@@ -1,0 +1,21 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <!--导航顶部标题文字-->
+    <dimen name="tv_navigation_title">18sp</dimen>
+    <!-- 导航顶部 按钮文字大小 -->
+    <dimen name="common_headbar_btn_text_size">16sp</dimen>
+    <!--用于重要标题-->
+    <dimen name="tv_model_title">14sp</dimen>
+    <!--大多数的文字-->
+    <dimen name="tv_normal">13sp</dimen>
+    <!--大多数的文字-->
+    <dimen name="tv_subtitle">11sp</dimen>
+    <!--副标题-->
+    <dimen name="tv_normal_least">12sp</dimen>
+    <!--备注，说明性文字-->
+    <dimen name="tv_hint">10sp</dimen>
+
+    <dimen name="divider_height">1px</dimen>
+
+
+</resources>

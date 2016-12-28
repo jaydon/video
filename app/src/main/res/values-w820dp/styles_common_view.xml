@@ -1,0 +1,120 @@
+<resources>
+    <!--宽度高度-->
+    <style name="CommonMathParent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="CommonWrapContent">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="CommonHeightMath">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="CommonWidthMath">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <!--竖向Linearlayout-->
+    <style name="CommonMathParent.CommonLL">
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <!--带间隔的-->
+    <style name="CommonHeightMath.CommonPadding">
+        <item name="android:paddingLeft">@dimen/common_left_padding</item>
+        <item name="android:paddingRight">@dimen/common_right_padding</item>
+        <item name="android:paddingTop">@dimen/common_top_padding</item>
+        <item name="android:paddingBottom">@dimen/common_bottom_padding</item>
+    </style>
+
+    <style name="CommonWidthMath.CommonPadding">
+        <item name="android:paddingLeft">@dimen/common_left_padding</item>
+        <item name="android:paddingRight">@dimen/common_right_padding</item>
+        <item name="android:paddingTop">@dimen/common_top_padding</item>
+        <item name="android:paddingBottom">@dimen/common_bottom_padding</item>
+    </style>
+
+    <style name="CommonWrapContent.CommonPadding">
+        <item name="android:paddingLeft">@dimen/common_left_padding</item>
+        <item name="android:paddingRight">@dimen/common_right_padding</item>
+        <item name="android:paddingTop">@dimen/common_top_padding</item>
+        <item name="android:paddingBottom">@dimen/common_bottom_padding</item>
+    </style>
+
+    <!--公用的水平分割线style-->
+    <style name="view_divider_horizontal">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/divider</item>
+    </style>
+
+    <!--公用的竖直分割线style-->
+    <style name="view_divider_vertical">
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@color/divider</item>
+    </style>
+
+    <!--大部分文字 -->
+    <style name="biggst_white">
+        <item name="android:textSize">@dimen/tv_normal</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!--导航栏标题-->
+    <style name="TVTitle">
+        <item name="android:textSize">@dimen/tv_navigation_title</item>
+        <item name="android:textColor">@color/tv_title</item>
+    </style>
+
+    <!--hint 指引类型类型文字 -->
+    <style name="text_hint_normal">
+        <item name="android:textSize">@dimen/tv_normal</item>
+        <item name="android:textColor">@color/tv_hint</item>
+    </style>
+
+    <!--高度宽度自适应的标题文本-->
+    <style name="CommonWrapContent.TVTitle">
+        <item name="android:textSize">@dimen/tv_navigation_title</item>
+        <item name="android:textColor">@color/tv_title</item>
+    </style>
+    <!--标题文本-->
+    <style name="TVNavigationTitle">
+        <item name="android:textSize">@dimen/common_headbar_btn_text_size</item>
+        <item name="android:textColor">@color/tv_title</item>
+    </style>
+    <!--高度宽度自适应的标题文本-->
+    <style name="CommonWrapContent.TVNavigationTitle">
+        <item name="android:textSize">@dimen/common_headbar_btn_text_size</item>
+        <item name="android:textColor">@color/tv_title</item>
+    </style>
+    <!--重要文本-->
+    <style name="TVImportantTitle">
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:textColor">@color/tv_title</item>
+    </style>
+    <!--高度宽度自适应的重要文本-->
+    <style name="CommonWrapContent.TVImportantTitle">
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:textColor">@color/tv_title</item>
+    </style>
+
+    <!--次要文本-->
+    <style name="TVLeast">
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:textColor">@color/btn_deep</item>
+    </style>
+
+    <!--高度宽度自适应的次要文本-->
+    <style name="CommonWrapContent.TVLeast">
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:textColor">@color/btn_deep</item>
+    </style>
+
+</resources>

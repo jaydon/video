@@ -98,7 +98,8 @@
             android:layout_height="wrap_content"
             android:padding="5dp"
             android:text="全屏"
-            android:textColor="@color/colorAccent"/>
+            android:textColor="@color/colorAccent"
+            android:visibility="gone"/>
 
     </LinearLayout>
 

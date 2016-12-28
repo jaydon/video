@@ -9,4 +9,78 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
+
+    <!--ShSwitchView开发统一定义高度宽度-->
+    <style name="ShSwitch">
+        <item name="android:layout_width">55dp</item>
+        <item name="android:layout_height">35dp</item>
+    </style>
+
+    <style name="sixteen_black">
+        <item name="android:textSize">@dimen/tv_normal</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="sixteen_white">
+        <item name="android:textSize">@dimen/tv_normal</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="sixteen_green">
+        <item name="android:textSize">@dimen/tv_normal</item>
+        <item name="android:textColor">@color/green</item>
+    </style>
+
+    <!--全局TabLayout 字体颜色和大小 -->
+    <style name="appearanceTabLayout" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+
+    <!--在订单模块，用户模块都有使用-->
+    <!--左边选中的style-->
+    <style name="TVLeftSelect">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">@dimen/common_top_padding</item>
+        <item name="android:paddingBottom">@dimen/common_bottom_padding</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <!--左边不被选中的style-->
+    <style name="TVLeftUnSelect">
+        <item name="android:textColor">@color/btn_deep</item>
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">@dimen/common_top_padding</item>
+        <item name="android:paddingBottom">@dimen/common_bottom_padding</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <!--右边被选中的style-->
+    <style name="TVRightSelect">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">@dimen/common_top_padding</item>
+        <item name="android:paddingBottom">@dimen/common_bottom_padding</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <!--右边不被选中的style-->
+    <style name="TVRightUnSelect">
+        <item name="android:textColor">@color/btn_deep</item>
+        <item name="android:textSize">@dimen/tv_model_title</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">@dimen/common_top_padding</item>
+        <item name="android:paddingBottom">@dimen/common_bottom_padding</item>
+        <item name="android:gravity">center</item>
+    </style>
 </resources>

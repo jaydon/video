@@ -11,14 +11,19 @@ import com.danikula.videocache.HttpProxyCacheServer;
  * Time: 17:55
  */
 public class VideoApplication extends Application {
+    private static Context mContext;
     private HttpProxyCacheServer proxy;
     @Override
     public void onCreate() {
         super.onCreate();
+        mContext = getApplicationContext();
         proxy = newProxy();
 
     }
 
+    public static Context getContext() {
+        return mContext;
+    }
 
     public static HttpProxyCacheServer getProxy(Context context) {
         VideoApplication app = (VideoApplication) context.getApplicationContext();

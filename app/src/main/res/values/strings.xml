@@ -1,3 +1,88 @@
 <resources>
     <string name="app_name">video</string>
+    <string name="app_exit_tip">再按一次退出程序</string>
+    <!-- 多状态页面 -->
+    <string name="state_error">很抱歉，加载失败</string>
+    <string name="state_loading">加载中...</string>
+    <string name="state_net_error">很抱歉，网络错误</string>
+    <string name="state_empty">暂无相关数据</string>
+    <string name="reload">重新加载</string>
+
+    <!-- 网络状态提示 -->
+    <string name="network_none">当前无网络</string>
+    <string name="network_wife">当前使用Wifi网络</string>
+    <string name="network_234g">当前使用移动网络</string>
+
+    <!-- 环境 -->
+    <string name="environment_release">正式环境</string>
+    <string name="environment_experience">体验环境</string>
+    <string name="environment_test">测试环境</string>
+    <string name="environment_forbid">环境一样，切换个毛啊</string>
+
+
+    <!--加载中对话框  -->
+    <string name="common_dialog_text_loading">拼命获取数据中，请稍等...</string>
+
+    <!--  首页 -->
+    <string name="main_tab_home">首页</string>
+    <string name="main_tab_msg">消息</string>
+    <string name="main_tab_order">我的预约</string>
+    <string name="main_tab_user">个人中心</string>
+
+    <!--公共使用-->
+    <string name="more">更多</string>
+    <string name="cancel">取消</string>
+    <string name="cancelling">取消中</string>
+    <string name="agree">同意</string>
+    <string name="delete">删除</string>
+
+    <!--检验-->
+    <string name="phone_num_empty">手机号码不能为空</string>
+    <string name="phone_num_length">手机号码输入长度需为11位数</string>
+    <string name="phone_num_error">您输入的手机号有误</string>
+    <string name="id_card_not_null">身份证号不能为空</string>
+    <string name="id_card_contain_number_alpha">身份证号必须是由数字和字母组成</string>
+    <string name="id_card_wrong">身份证号码错误</string>
+    <string name="please_get_valid_code_again">请重新获取验证码！</string>
+    <string name="valid_code_not_right">验证码不正确！</string>
+    <string name="user_valid_code_not_null">验证码不能为空！</string>
+    <string name="digits_id_card">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</string>
+    <string name="digits_hk_id_card">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ（()）/*0123456789</string>
+
+    <!--内置浏览器-->
+    <string name="webview_url_empty_hint">url地址不能为空</string>
+
+    <!--欢迎页 -->
+    <string name="welcome_loading_text">正在载入，请稍后</string>
+    <string name="welcome_loading_text_dot">...</string>
+
+    <!--更新页面 -->
+    <string name="update_has_new">有新版本啦</string>
+    <string name="update_content">更新内容</string>
+    <string name="update_version">更新版本</string>
+    <string name="update_new_version">新版本</string>
+    <string name="update_immediately">立即更新</string>
+    <string name="update_stop">暂不更新</string>
+    <string name="update_running">更新中......</string>
+    <string name="update_no_udpate">暂无更新</string>
+    <string name="update_newest">已是最新版本</string>
+    <string name="update_download_success">下载成功</string>
+    <string name="update_download_fail">下载失败</string>
+    <string name="update_download_file_error">下载文件异常</string>
+    <string name="update_version_error">服务器版本信息错误</string>
+    <string name="update_down_again">点击重新下载</string>
+
+    <!-- 反馈页面 -->
+    <string name="feedback_do_not_repeat">请勿重复提交！</string>
+
+    <!--定位修改提示-->
+    <string name="location_change_title">城市定位</string>
+    <string name="location_change_content">当前定位为%s,是否切换城市?</string>
+
+    <!--选择 -->
+    <string name="picker_cancel">取消</string>
+    <string name="picker_sure">选择</string>
+    <string name="picker_please_select">请选择</string>
+
+
 </resources>

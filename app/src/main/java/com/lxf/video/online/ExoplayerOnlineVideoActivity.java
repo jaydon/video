@@ -6,12 +6,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -38,6 +36,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.lxf.video.ImageLoaderGlideUtil;
 import com.lxf.video.R;
 import com.lxf.video.VideoApplication;
 
@@ -47,13 +46,14 @@ import com.lxf.video.VideoApplication;
  * Date: 2016-12-22
  * Time: 09:08
  */
-public class ExoplayerOnlineVideoActivity extends AppCompatActivity implements View.OnClickListener {
+public class ExoplayerOnlineVideoActivity extends AppCompatActivity implements View.OnClickListener, ExoPlayer.EventListener {
     private RelativeLayout rlVideo;
     private SimpleExoPlayerView simpleExoPlayerView;
     private TextView tvFullLayout;
     private ImageButton exoPlay;                                       //播放
     private ImageButton exoPause;                                      //暂停
-    private ImageView ivResumeStart;                                //重播
+    private ImageView ivResumeStart;                                   //重播
+    private ImageView ivVideoBg;
 
     private SimpleExoPlayer player;
     private boolean isTimelineStatic;
@@ -69,51 +69,69 @@ public class ExoplayerOnlineVideoActivity extends AppCompatActivity implements V
         simpleExoPlayerView = (SimpleExoPlayerView) findViewById(R.id.simpleExoPlayerView);
         tvFullLayout = (TextView) findViewById(R.id.tv_full_layout);
         tvFullLayout.setOnClickListener(this);
+        tvFullLayout.setVisibility(View.VISIBLE);
         exoPlay = (ImageButton) findViewById(R.id.exo_play);
-        exoPlay.setOnClickListener(this);
         exoPause = (ImageButton) findViewById(R.id.exo_pause);
-        exoPause.setOnClickListener(this);
         ivResumeStart = (ImageView) findViewById(R.id.iv_resume_start);
         ivResumeStart.setOnClickListener(this);
+        ivVideoBg = (ImageView) findViewById(R.id.iv_video_bg);
+        initIntentData();
+    }
+
+    private void initIntentData() {
+        isTimelineStatic = false;
+        initializePlayer();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (Util.SDK_INT > 23) {
-            initializePlayer();
-        }
+//        if (Util.SDK_INT > 23) {
+//            initializePlayer();
+//        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if ((Util.SDK_INT <= 23 || player == null)) {
-            initializePlayer();
+        if(null != player) {
+            player.setPlayWhenReady(true);
         }
+//        if ((Util.SDK_INT <= 23 || player == null)) {
+//            initializePlayer();
+//        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (Util.SDK_INT <= 23) {
-            releasePlayer();
+        if(null != player) {
+            player.setPlayWhenReady(false);
         }
+//        if (Util.SDK_INT <= 23) {
+//            releasePlayer();
+//        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (Util.SDK_INT > 23) {
-            releasePlayer();
-        }
+//        if (Util.SDK_INT > 23) {
+//            releasePlayer();
+//        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releasePlayer();
     }
 
     @Override
     public void onNewIntent(Intent intent) {
-        releasePlayer();
-        isTimelineStatic = false;
         setIntent(intent);
+        releasePlayer();
+        initIntentData();
     }
 
     /**初始化视频播放器
@@ -146,44 +164,9 @@ public class ExoplayerOnlineVideoActivity extends AppCompatActivity implements V
         MediaSource videoSource = new ExtractorMediaSource(uri,
                 dataSourceFactory, extractorsFactory, null, null);
         //暂停播放使用
-        player.setPlayWhenReady(true);
         // Prepare the player with the source.
-        player.addListener(new ExoPlayer.EventListener() {
-            @Override
-            public void onTimelineChanged(Timeline timeline, Object manifest) {
-
-            }
-
-            @Override
-            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-            }
-
-            @Override
-            public void onLoadingChanged(boolean isLoading) {
-
-            }
-
-            @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                //播放完成
-                if(playbackState == ExoPlayer.STATE_ENDED) {
-                    exoPause.setVisibility(View.GONE);
-                    exoPlay.setVisibility(View.VISIBLE);
-                    ivResumeStart.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onPlayerError(ExoPlaybackException error) {
-
-            }
-
-            @Override
-            public void onPositionDiscontinuity() {
-
-            }
-        });
+        player.addListener(this);
+        player.setPlayWhenReady(true);
         player.prepare(videoSource);
     }
 
@@ -242,6 +225,56 @@ public class ExoplayerOnlineVideoActivity extends AppCompatActivity implements V
             releasePlayer();
             super.onBackPressed();
         }
+
+    }
+
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+        if(isLoading) {
+            ivVideoBg.setVisibility(View.VISIBLE);
+            ImageLoaderGlideUtil.displayImage(ivVideoBg,
+                    "http://img4.jiecaojingxuan.com/2016/8/17/bd7ffc84-8407-4037-a078-7d922ce0fb0f.jpg",
+                    R.mipmap.ic_launcher);
+        } else {
+            ivVideoBg.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        //播放完成
+        if(playbackState == ExoPlayer.STATE_ENDED) {
+            exoPause.setVisibility(View.GONE);
+            exoPlay.setVisibility(View.VISIBLE);
+            ivResumeStart.setVisibility(View.VISIBLE);
+        } else if (playbackState == ExoPlayer.STATE_READY) {
+            //可以播放
+            player.setPlayWhenReady(true);
+        } else if(playbackState == ExoPlayer.STATE_BUFFERING) {
+            //缓冲完成
+
+        } else if(playbackState == ExoPlayer.STATE_IDLE) {
+
+        }
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
 
     }
 }

@@ -4,4 +4,30 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="video_height">200dp</dimen>
+    <!-- 公共头部的高度 -->
+    <dimen name="common_headbar_height">45dp</dimen>
+    <!-- 公共头部 带文字按钮图标的宽高 drableLeft类型-->
+    <dimen name="common_headbar_drawable_icon_area">22dp</dimen>
+    <!-- 公共头部 文字按钮padding-->
+    <dimen name="common_headbar_text_padding">13dp</dimen>
+    <!-- 头部小图标按钮 扩大点击范围padding, -->
+    <dimen name="common_small_padding">16dp</dimen>
+    <!-- 普通的统一的padding -->
+    <dimen name="common_left_padding">18dp</dimen>
+    <dimen name="common_right_padding">18dp</dimen>
+    <dimen name="common_top_padding">11dp</dimen>
+    <dimen name="common_bottom_padding">11dp</dimen>
+    <!--公共的文本上下间距-->
+    <dimen name="common_tv_padding">7dp</dimen>
+    <!--公共的文本与图片间距-->
+    <dimen name="common_tv_drawable_padding">7dp</dimen>
+    <!-- 按钮统一的圆角样式 -->
+    <dimen name="btn_corner">4dp</dimen>
+    <dimen name="btn_corner_big">8dp</dimen>
+    <dimen name="margintop_of_state_view">150dp</dimen>
+    <dimen name="margin_of_wallet_pay">20dp</dimen>
+
+    <!-- 首页tab高度-->
+    <dimen name="main_tab_height">55dp</dimen>
+    <dimen name="update_desc_margin">3dp</dimen>
 </resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/common_loading"
+    style="@style/CommonWidthMath"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp">
+
+    <ImageView
+        android:id="@+id/ivLoading"
+        android:layout_width="23dp"
+        android:layout_height="23dp"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/icon_loading_small" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/state_loading"
+        android:textColor="@color/tv_hint"
+        android:textSize="@dimen/tv_normal" />
+</LinearLayout>

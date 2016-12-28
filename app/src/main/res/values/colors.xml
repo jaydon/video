@@ -3,4 +3,46 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <!--界面-->
+    <!--按钮、凸显的字体-->
+    <color name="btn_deep">#2694E9</color>
+    <!--按钮（三甲，已预约，我的主页色块等-->
+    <color name="btn_light">#80C0F0</color>
+    <!--按钮，不可点击颜色-->
+    <color name="btn_not_click">#CFCFCF</color>
+    <!--按钮，点击颜色-->
+    <color name="btn_click">#096DBA</color>
+    <!--按钮提醒状态颜色-->
+    <color name="btn_emp">#FF3B3B</color>
+    <!--导航输入框-->
+    <color name="nav_search">#F3F5F4</color>
+    <!--导航、背景-->
+    <color name="bg">#FFFFFF</color>
+
+
+    <!--字体-->
+    <!--重要级信息，标题信息字-->
+    <color name="tv_title">#222222</color>
+    <!--次要信息、普通字句、段落字-->
+    <color name="tv_normal">#4D4D4D</color>
+    <!--指引性文字，辅助文字-->
+    <color name="tv_hint">#999999</color>
+    <!--强调字体（如价格，状态，按钮-->
+    <color name="tv_emp">#FF3B3B</color>
+    <!--分割线-->
+    <color name="divider">#f1f2f5</color>
+    <!--透明颜色-->
+    <color name="transparent">#00000000</color>
+    <!--viewpager tablayout-->
+    <color name="tab_gray">#DCDAE0</color>
+    <color name="delete_gray">#9B9C9C</color>
+
+
+    <color name="normal_divider">#F0EFF3</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="black_transparent">#33000000</color>
+    <color name="black_26">#44000000</color>
+    <color name="green">#26D7A9</color>
 </resources>

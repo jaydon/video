@@ -46,9 +46,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private TextView exoDuration;                           //视频播放时长
     private SeekBar exoProgress;                            //播放进度
     private ProgressBar exoBottomProgressbar;               //底部的progressbar;
+    private ImageView ivPause;                              //暂停按钮
 
     private boolean mDragging;                              //用来表示SeekBar是否在拖动中。
     private boolean mTouched;                               //用来表示控制状态
+    private boolean mPausing;                               //是否停止播放
     private StringBuilder formatBuilder = new StringBuilder();
     private Formatter formatter = new Formatter(formatBuilder, Locale.getDefault());
 
@@ -81,6 +83,8 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         exoProgress = (SeekBar) findViewById(R.id.exo_progress);
         exoProgress.setOnSeekBarChangeListener(onSeekBarChangeListener);
         exoBottomProgressbar = (ProgressBar) findViewById(R.id.exo_bottom_progressbar);
+        ivPause = (ImageView) findViewById(R.id.iv_pause);
+        ivPause.setOnClickListener(this);
         setUIState(UI_VIDEO_STATE_INIT);
     }
 
@@ -214,6 +218,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                 uiStateReady();
                 break;
             case UI_VIDEO_PAUSING:
+                uiStatePause();
                 break;
             case UI_VIDEO_END_PLAY:
                 break;
@@ -233,6 +238,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         progressBarLoading.setVisibility(View.INVISIBLE);
         exoLayoutBottom.setVisibility(View.INVISIBLE);
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
+        ivPause.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -243,17 +249,19 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         progressBarLoading.setVisibility(View.VISIBLE);
         exoLayoutBottom.setVisibility(View.INVISIBLE);
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
+        ivPause.setVisibility(View.INVISIBLE);
     }
 
     /**
      * 视频播放可以播放状态
      */
     private void uiStateReady() {
-       if(!mTouched) {
+       if(!mTouched && !mPausing) {
            ivStart.setVisibility(View.INVISIBLE);
            progressBarLoading.setVisibility(View.INVISIBLE);
            exoLayoutBottom.setVisibility(View.INVISIBLE);
            exoBottomProgressbar.setVisibility(View.VISIBLE);
+           ivPause.setVisibility(View.INVISIBLE);
        }
     }
 
@@ -265,6 +273,20 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         progressBarLoading.setVisibility(View.INVISIBLE);
         exoLayoutBottom.setVisibility(View.VISIBLE);
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
+        ivPause.setVisibility(View.INVISIBLE);
+    }
+
+    /**
+     * 视频播放状态：暂停状态
+     */
+    private void uiStatePause() {
+        mPausing = true;
+        ExoPlayerManager.getInstance().setExoPlayWhenRead(false);
+        ivStart.setVisibility(View.INVISIBLE);
+        progressBarLoading.setVisibility(View.INVISIBLE);
+        exoLayoutBottom.setVisibility(View.INVISIBLE);
+        exoBottomProgressbar.setVisibility(View.INVISIBLE);
+        ivPause.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -376,6 +398,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                     ExoPlayerManager.getInstance().getSimpleExoPlayer().setPlayWhenReady(true);
                 }
 
+                break;
+            case R.id.iv_pause:
+                mPausing = false;
+                ExoPlayerManager.getInstance().setExoPlayWhenRead(true);
+                setUIState(UI_VIDEO_STATE_Buffering);
                 break;
         }
     }

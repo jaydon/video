@@ -22,25 +22,19 @@ public class ExoPlayerLayoutActivity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exoplayer_layout);
+        exoPlayerLayout = (ExoPlayerLayout) findViewById(R.id.exo_player_layout);
         ExoPlayerManager.getInstance().setUrl(path);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        SimpleExoPlayer simpleExoPlayer = ExoPlayerManager.getInstance().getSimpleExoPlayer();
-        if(null != simpleExoPlayer) {
-            simpleExoPlayer.setPlayWhenReady(true);
-        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        SimpleExoPlayer simpleExoPlayer = ExoPlayerManager.getInstance().getSimpleExoPlayer();
-        if(null != simpleExoPlayer) {
-            simpleExoPlayer.setPlayWhenReady(false);
-        }
+        exoPlayerLayout.setUIState(ExoPlayerLayout.UI_VIDEO_PAUSING);
     }
 
     @Override

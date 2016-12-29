@@ -325,4 +325,13 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     public void setUrl(String url) {
         this.mUrl = url;
     }
+
+    /**
+     * 设置播放器状态
+     */
+    public void setExoPlayWhenRead(boolean playeWhenRead) {
+        if(null != mSimpleExoPlayer) {
+            mSimpleExoPlayer.setPlayWhenReady(playeWhenRead);
+        }
+    }
 }

@@ -67,7 +67,6 @@ public class ExoPlayerVideoAdapter extends BaseRecyclerViewAdapter<VideoBean> {
     }
 
     private void initializePlayer(ExoPlayerLayout exoPlayerLayout, VideoBean videoBean) {
-        exoPlayerLayout.eventPreparePlay(videoBean.getVideoUrl());
     }
 
 }

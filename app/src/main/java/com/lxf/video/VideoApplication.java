@@ -17,6 +17,7 @@ public class VideoApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mContext = getApplicationContext();
+        CrashHandler.init(mContext);
         proxy = newProxy();
 
     }

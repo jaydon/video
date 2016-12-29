@@ -58,7 +58,7 @@ public class ExoplayerOnlineVideoActivity extends AppCompatActivity implements V
     private SimpleExoPlayer player;
     private boolean isTimelineStatic;
     private DefaultBandwidthMeter bandwidthMeter;
-    private String path = "http://125.39.142.86/data2/video09/2016/03/01/3871799-102-1615.mp4";
+    private String path = "http://video.jiecao.fm/8/17/bGQS3BQQWUYrlzP1K4Tg4Q__.mp4";
     private Uri uri;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

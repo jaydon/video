@@ -11,6 +11,7 @@ import com.lxf.video.R;
 import com.lxf.video.VideoConstant;
 import com.lxf.video.adapter.ExoPlayerVideoAdapter;
 import com.lxf.video.bean.VideoBean;
+import com.lxf.video.exoplayer.ExoPlayerLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,4 +52,5 @@ public class ExoplayerOnlineListActivity extends AppCompatActivity {
         }
         mAdapter.changeData(videoBeenList);
     }
+
 }

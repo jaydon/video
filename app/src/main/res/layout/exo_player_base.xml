@@ -59,10 +59,10 @@
         <!--全屏按钮-->
         <ImageView
             android:id="@+id/fullscreen"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:paddingRight="16dp"
-            android:scaleType="center"
+            android:scaleType="fitXY"
             android:background="@mipmap/exo_layout_full_screen" />
     </LinearLayout>
 

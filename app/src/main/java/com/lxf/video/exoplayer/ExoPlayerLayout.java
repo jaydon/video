@@ -40,11 +40,12 @@ import java.util.Locale;
  */
 public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener{
     public final static int UI_VIDEO_STATE_INIT = 0;        //视频状态：初始状态
-    public final static int UI_VIDEO_STATE_Buffering = 1;   //视频状态：点击开始，缓冲状态
+    public final static int UI_VIDEO_STATE_BUFFERING = 1;   //视频状态：点击开始，缓冲状态
     public final static int UI_VIDEO_PLAYING = 2;           //视频状态：播放状态
     public final static int UI_VIDEO_PAUSING = 3;           //视频状态：暂停状态， 暂停中，点击又开始播放
     public final static int UI_VIDEO_FINISH = 4;            //视频状态：播放完成状态
     public final static int UI_VIDEO_TOUCHED = 5;           //视频状态：播放状态，timeline等，属于触模后的一种动态
+    public final static int UI_VIDEO_END = 6;               //播放结束，点击再度播放，则从头开始播放
     private static final int PROGRESS_BAR_MAX = 100;        //progress 最大值
     public static final int DEFAULT_SHOW_TIMEOUT_MS = 5000; //Touched状态多长时间消失
 
@@ -245,12 +246,13 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             case UI_VIDEO_STATE_INIT:
                 uiStateInit();
                 break;
-            case UI_VIDEO_STATE_Buffering:
+            case UI_VIDEO_STATE_BUFFERING:
                 uiStateBuffering();
                 break;
             case UI_VIDEO_PLAYING:
                 uiStateReady();
                 break;
+            case UI_VIDEO_END:
             case UI_VIDEO_PAUSING:
                 uiStatePause();
                 break;
@@ -260,7 +262,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             case UI_VIDEO_TOUCHED:
                 uiStateTouched();
                 break;
-
             default:
                 break;
         }
@@ -454,14 +455,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                 break;
             //暂停：点击播放
             case R.id.iv_pause:
-                mPausing = false;
-                mTouched = false;
-                if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
-                    clickToStart();
-                } else {
-                    ExoPlayerManager.getInstance().setExoPlayWhenRead(true);
-                    setUIState(UI_VIDEO_PLAYING);
-                }
+                clickToPause();
                 break;
             //暂停：点击播放
             case R.id.iv_to_pause:
@@ -496,12 +490,36 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             Toast.makeText(mContext, "播放的地址不得为空", Toast.LENGTH_SHORT).show();
         }
         ExoPlayerManager.getInstance().setUrl(mUrl);
-        setUIState(UI_VIDEO_STATE_Buffering);
+        setUIState(UI_VIDEO_STATE_BUFFERING);
         surfaceContainer.setOnTouchListener(surfaceListener);
         surfaceContainer.setOnClickListener(this);
         if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
             eventPreparePlay();
             ExoPlayerManager.getInstance().preparePlayer(mContext, ExoPlayerManager.getInstance().getUrl());
+        }
+    }
+
+    /**
+     * 暂停状态点击再播放
+     */
+    private void clickToPause() {
+        mPausing = false;
+        mTouched = false;
+        if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
+            clickToStart();
+        } else {
+            ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
+            SimpleExoPlayer simpleExoPlayer = exoPlayerManager.getSimpleExoPlayer();
+            if(simpleExoPlayer.getDuration() - simpleExoPlayer.getCurrentPosition() > 100) {
+                exoPlayerManager.setExoPlayWhenRead(true);
+                setUIState(UI_VIDEO_PLAYING);
+            } else {
+                simpleExoPlayer.seekTo(0L);
+                setUIState(UI_VIDEO_STATE_BUFFERING);
+                updateProgress();
+                exoPlayerManager.setExoPlayWhenRead(true);
+            }
+
         }
     }
 

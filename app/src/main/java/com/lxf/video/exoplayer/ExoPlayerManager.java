@@ -268,6 +268,15 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         //播放完成
         if(playbackState == ExoPlayer.STATE_ENDED) {
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ExoPlayerLayout exoPlayerLayout = ExoPlayerLayoutManager.getInstance().getCurrentJcvd();
+                    if(null != exoPlayerLayout) {
+                        exoPlayerLayout.setUIState(ExoPlayerLayout.UI_VIDEO_END);
+                    }
+                }
+            });
         } else if (playbackState == ExoPlayer.STATE_READY) {
             mainHandler.post(new Runnable() {
                 @Override

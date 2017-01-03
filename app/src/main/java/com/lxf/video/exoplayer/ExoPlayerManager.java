@@ -272,7 +272,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
                 @Override
                 public void run() {
                     ExoPlayerLayout exoPlayerLayout = ExoPlayerLayoutManager.getInstance().getCurrentJcvd();
-                    if(null != exoPlayerLayout) {
+                    if(null != exoPlayerLayout && null != mSimpleExoPlayer && 0 != mSimpleExoPlayer.getCurrentPosition()) {
                         exoPlayerLayout.setUIState(ExoPlayerLayout.UI_VIDEO_END);
                     }
                 }

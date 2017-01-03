@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.TextureView;
@@ -510,14 +511,16 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         } else {
             ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
             SimpleExoPlayer simpleExoPlayer = exoPlayerManager.getSimpleExoPlayer();
-            if(simpleExoPlayer.getDuration() - simpleExoPlayer.getCurrentPosition() > 100) {
+            Log.e("clickToPause", "duration : " + simpleExoPlayer.getDuration() + " currentPosition : " + simpleExoPlayer.getCurrentPosition());
+            if(simpleExoPlayer.getDuration() - simpleExoPlayer.getCurrentPosition() >= 1000) {
                 exoPlayerManager.setExoPlayWhenRead(true);
                 setUIState(UI_VIDEO_PLAYING);
             } else {
-                simpleExoPlayer.seekTo(0L);
-                setUIState(UI_VIDEO_STATE_BUFFERING);
-                updateProgress();
+                removeCallbacks(updateProgressRunnable);
                 exoPlayerManager.setExoPlayWhenRead(true);
+                simpleExoPlayer.seekTo(0L);
+                setUIState(UI_VIDEO_PLAYING);
+                updateProgress();
             }
 
         }

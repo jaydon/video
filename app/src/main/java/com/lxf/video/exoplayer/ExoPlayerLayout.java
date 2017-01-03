@@ -3,6 +3,7 @@ package com.lxf.video.exoplayer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -224,6 +225,15 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     public void releaseAllVideos() {
         ExoPlayerManager.getInstance().releasePlayer();
         ExoPlayerLayoutManager.getInstance().completeAll();
+    }
+
+    /**
+     *
+     * @param newConfig
+     */
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
     }
 
     /**

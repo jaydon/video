@@ -27,25 +27,23 @@
 
         <!--在线播放视频-->
         <activity android:name=".online.VitamioOnlineVideoActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="stateAlwaysHidden"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait"
             />
 
         <!--在线播放视频-->
         <activity android:name=".online.ExoplayerOnlineVideoActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="stateAlwaysHidden"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait"
             />
 
-        <activity android:name=".online.ExoplayerOnlineListActivity"/>
+        <activity android:name=".online.ExoplayerOnlineListActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait" />
         <!--在线播放视频-->
         <activity android:name=".online.ExoPlayerLayoutActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="stateAlwaysHidden"
-            android:hardwareAccelerated="true"/>
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait" />
 
     </application>
 

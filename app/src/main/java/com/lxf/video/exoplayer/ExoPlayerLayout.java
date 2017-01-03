@@ -41,10 +41,10 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     public final static int UI_VIDEO_STATE_Buffering = 1;   //视频状态：点击开始，缓冲状态
     public final static int UI_VIDEO_PLAYING = 2;           //视频状态：播放状态
     public final static int UI_VIDEO_PAUSING = 3;           //视频状态：暂停状态， 暂停中，点击又开始播放
-    public final static int UI_VIDEO_FINISH = 4;           //视频状态：播放完成状态
+    public final static int UI_VIDEO_FINISH = 4;            //视频状态：播放完成状态
     public final static int UI_VIDEO_TOUCHED = 5;           //视频状态：播放状态，timeline等，属于触模后的一种动态
-    private static final int PROGRESS_BAR_MAX = 100;       //progress 最大值
-    public static final int DEFAULT_SHOW_TIMEOUT_MS = 5000;//Touched状态多长时间消失
+    private static final int PROGRESS_BAR_MAX = 100;        //progress 最大值
+    public static final int DEFAULT_SHOW_TIMEOUT_MS = 5000; //Touched状态多长时间消失
 
     private Context mContext;
     private ViewGroup surfaceContainer;                     //视频加载块

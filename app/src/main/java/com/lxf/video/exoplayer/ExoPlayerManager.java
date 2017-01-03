@@ -244,7 +244,10 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    ExoPlayerLayoutManager.getInstance().getCurrentJcvd().setUIState(ExoPlayerLayout.UI_VIDEO_PLAYING);
+                    ExoPlayerLayout exoPlayerLayout = ExoPlayerLayoutManager.getInstance().getCurrentJcvd();
+                    if(null != exoPlayerLayout) {
+                        exoPlayerLayout.setUIState(ExoPlayerLayout.UI_VIDEO_PLAYING);
+                    }
                 }
             });
             //可以播放

@@ -11,10 +11,10 @@ import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +27,7 @@ import com.lxf.video.R;
 import com.lxf.video.VideoApplication;
 
 
+import java.lang.reflect.Constructor;
 import java.util.Formatter;
 import java.util.Locale;
 
@@ -67,6 +68,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private Formatter formatter = new Formatter(formatBuilder, Locale.getDefault());
 
     private int mDefaultHeight = -1;                        //用于保存全屏前的高度
+    private ExoPlayerLayout mFullScreenExoPlayerLayout;     //用于保存全屏的ExoPlayerLayout
     private String mUrl;                                    //保存要播放的URL;
     private String mImageUrl;                               //视频背景URL;
 
@@ -465,12 +467,10 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                 //全屏
                 if(mDefaultHeight < 0) {
                     ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_not_full_screen);
-                    mDefaultHeight = getHeight();
                     fullVideo();
                 } else {
                     ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_full_screen);
                     //恢复原来的高度
-                    mDefaultHeight = -1;
                     notFullVideo();
                 }
                 break;
@@ -497,18 +497,37 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     /**
      * 全屏操作，横屏
      */
+    @SuppressWarnings("unchecked")
     private void fullVideo() {
-        ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        mDefaultHeight = getHeight();
+        ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
+        Constructor<ExoPlayerLayout> constructor = null;
+        try {
+            constructor = (Constructor<ExoPlayerLayout>) ExoPlayerLayout.this.getClass().getConstructor(Context.class);
+            mFullScreenExoPlayerLayout = constructor.newInstance(mContext);
+            surfaceContainer.removeView(ExoPlayerManager.getInstance().getTextureView());
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            decorView.addView(mFullScreenExoPlayerLayout, lp);
+            mFullScreenExoPlayerLayout.setUrl(mUrl);
+            mFullScreenExoPlayerLayout.setImageUrl(mImageUrl);
+            mFullScreenExoPlayerLayout.addView(ExoPlayerManager.getInstance().getTextureView());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     /**
      * 恢复竖屏
      */
     public void notFullVideo() {
+        mDefaultHeight = -1;
         ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                mDefaultHeight));
+        ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
+        decorView.removeView(mFullScreenExoPlayerLayout);
+        mFullScreenExoPlayerLayout.removeView(ExoPlayerManager.getInstance().getTextureView());
+        mFullScreenExoPlayerLayout = null;
+        surfaceContainer.addView(ExoPlayerManager.getInstance().getTextureView());
     }
 
     /**

@@ -56,7 +56,6 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     private TextureView mTextureView;                                  //播放的layout 做统一管理，播放前需要remove掉旧的
     private String mUrl;
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
-    private SurfaceTexture mSurfaceTexture;                            //保留SurfaceTexture
     private ExoPlayerManager() {
         mMediaHandlerThread = new HandlerThread(TAG);
         mMediaHandlerThread.start();
@@ -113,7 +112,6 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     private void clearExoPlayer() {
         if(null != mSimpleExoPlayer) {
             mSimpleExoPlayer.release();
-            mSurfaceTexture = null;
             mSimpleExoPlayer = null;
             mUrl = null;
         }

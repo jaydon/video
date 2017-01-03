@@ -8,6 +8,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
+import android.view.Surface;
 import android.view.TextureView;
 
 import com.danikula.videocache.HttpProxyCacheServer;
@@ -44,7 +45,7 @@ import com.lxf.video.VideoApplication;
  * Date: 2016-12-27
  * Time: 10:14
  */
-public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlayer.VideoListener{
+public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlayer.VideoListener, TextureView.SurfaceTextureListener{
     private String TAG = ExoPlayerManager.class.getSimpleName();
     private static ExoPlayerManager mInstance;
     private final static int MSG_PREPARE = 1;                          //准备MEDIA
@@ -56,6 +57,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     private TextureView mTextureView;                                  //播放的layout 做统一管理，播放前需要remove掉旧的
     private String mUrl;
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
+    private SurfaceTexture mSurfaceTexture;                            //保存SurfaceTexture;
     private ExoPlayerManager() {
         mMediaHandlerThread = new HandlerThread(TAG);
         mMediaHandlerThread.start();
@@ -90,6 +92,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
         if(TextUtils.isEmpty(url)) {
             return;
         }
+        releasePlayer();
         ExoPlayerPrepareData exoPlayerPrepareData = new ExoPlayerPrepareData(context, url);
         Message msg = new Message();
         msg.what = MSG_PREPARE;
@@ -130,7 +133,9 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
         LoadControl loadControl = new DefaultLoadControl();
         mSimpleExoPlayer = ExoPlayerFactory.newSimpleInstance(exoPlayerPrepareData.getContext(), trackSelector, loadControl);
         //把player通过surfaceTextureListener联系在一起
-        mSimpleExoPlayer.setVideoTextureView(mTextureView);
+        if(null != mSurfaceTexture) {
+            mSimpleExoPlayer.setVideoSurface(new Surface(mSurfaceTexture));
+        }
         HttpProxyCacheServer proxy = VideoApplication.getProxy(VideoApplication.getContext());
         //缓存控制
         String proxyUrl = proxy.getProxyUrl(exoPlayerPrepareData.getUrl());
@@ -222,6 +227,31 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
                 ExoPlayerLayoutManager.getInstance().getCurrentJcvd().updateProgress();
             }
         });
+    }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
+        if (mSurfaceTexture == null) {
+            mSurfaceTexture = surfaceTexture;
+            preparePlayer(mTextureView.getContext(), getUrl());
+        } else {
+            mTextureView.setSurfaceTexture(mSurfaceTexture);
+        }
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        return mSurfaceTexture == null;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
+
     }
 
     @Override

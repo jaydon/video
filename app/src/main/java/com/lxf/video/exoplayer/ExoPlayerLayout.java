@@ -189,6 +189,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private void initTextureView() {
         ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
         exoPlayerManager.setTextureView(new TextureView(mContext));
+        exoPlayerManager.getTextureView().setSurfaceTextureListener(exoPlayerManager);
     }
 
     /**
@@ -503,10 +504,10 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
         Constructor<ExoPlayerLayout> constructor = null;
+        surfaceContainer.removeView(ExoPlayerManager.getInstance().getTextureView());
         try {
             constructor = (Constructor<ExoPlayerLayout>) ExoPlayerLayout.this.getClass().getConstructor(Context.class);
             mFullScreenExoPlayerLayout = constructor.newInstance(mContext);
-            surfaceContainer.removeView(ExoPlayerManager.getInstance().getTextureView());
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             decorView.addView(mFullScreenExoPlayerLayout, lp);
@@ -523,11 +524,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     public void notFullVideo() {
         mDefaultHeight = -1;
         ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        mFullScreenExoPlayerLayout.removeView(ExoPlayerManager.getInstance().getTextureView());
+        surfaceContainer.addView(ExoPlayerManager.getInstance().getTextureView());
         ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
         decorView.removeView(mFullScreenExoPlayerLayout);
-        mFullScreenExoPlayerLayout.removeView(ExoPlayerManager.getInstance().getTextureView());
         mFullScreenExoPlayerLayout = null;
-        surfaceContainer.addView(ExoPlayerManager.getInstance().getTextureView());
     }
 
     /**

@@ -11,7 +11,14 @@ import com.lxf.video.R;
 import com.lxf.video.VideoConstant;
 import com.lxf.video.adapter.ExoPlayerVideoAdapter;
 import com.lxf.video.bean.VideoBean;
+import com.lxf.video.event.ExoPlayerLayoutChangeEvent;
 import com.lxf.video.exoplayer.ExoPlayerLayout;
+import com.lxf.video.exoplayer.ExoPlayerLayoutManager;
+import com.lxf.video.exoplayer.ExoPlayerManager;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +58,42 @@ public class ExoplayerOnlineListActivity extends AppCompatActivity {
             }
         }
         mAdapter.changeData(videoBeenList);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ExoPlayerLayoutManager.getInstance().handlePausingUI();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ExoPlayerLayoutManager.getInstance().releaseAllVideos();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(!ExoPlayerLayoutManager.getInstance().handleBack()) {
+            super.onBackPressed();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(ExoPlayerLayoutChangeEvent event) {
+        mAdapter.notifyDataSetChanged();
     }
 
 }

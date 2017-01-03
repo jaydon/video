@@ -51,22 +51,10 @@ public class ExoPlayerVideoAdapter extends BaseRecyclerViewAdapter<VideoBean> {
 
     @Override
     protected void convert(BaseViewHolder helper, final VideoBean item, final int position, int viewType) {
-        final ExoPlayerLayout exoPlayerLayout = helper.getView(R.id.exo_player_layout);
-        final ImageView ivVideoBg = helper.getView(R.id.iv_video_bg);
-        ImageLoaderGlideUtil.displayImage(ivVideoBg, item.getVideoUrl(), R.mipmap.ic_launcher);
-        TextView tvVideoTitle = helper.getView(R.id.tv_video_title);
-        tvVideoTitle.setText(item.getVideoTitle());
-        final ImageView ivResumeStart = helper.getView(R.id.iv_resume_start);
-        ivResumeStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                notifyDataSetChanged();
-                initializePlayer(exoPlayerLayout, item);
-            }
-        });
+        ExoPlayerLayout exoPlayerLayout = helper.getView(R.id.exo_player_layout);
+        exoPlayerLayout.setUrl(item.getVideoUrl());
+        exoPlayerLayout.setImageUrl(item.getVideoThumb());
     }
 
-    private void initializePlayer(ExoPlayerLayout exoPlayerLayout, VideoBean videoBean) {
-    }
 
 }

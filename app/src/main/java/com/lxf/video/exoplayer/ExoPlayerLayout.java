@@ -1,7 +1,10 @@
 package com.lxf.video.exoplayer;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -11,13 +14,18 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.lxf.video.R;
+import com.lxf.video.VideoApplication;
+
 
 import java.util.Formatter;
 import java.util.Locale;
@@ -32,11 +40,12 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     public final static int UI_VIDEO_STATE_INIT = 0;        //视频状态：初始状态
     public final static int UI_VIDEO_STATE_Buffering = 1;   //视频状态：点击开始，缓冲状态
     public final static int UI_VIDEO_PLAYING = 2;           //视频状态：播放状态
-    public final static int UI_VIDEO_PAUSING = 3;           //视频状态：暂停状态
-    public final static int UI_VIDEO_END_PLAY = 4;          //视频状态：播放完成状态
+    public final static int UI_VIDEO_PAUSING = 3;           //视频状态：暂停状态， 暂停中，点击又开始播放
+    public final static int UI_VIDEO_FINISH = 4;           //视频状态：播放完成状态
     public final static int UI_VIDEO_TOUCHED = 5;           //视频状态：播放状态，timeline等，属于触模后的一种动态
     private static final int PROGRESS_BAR_MAX = 100;       //progress 最大值
     public static final int DEFAULT_SHOW_TIMEOUT_MS = 5000;//Touched状态多长时间消失
+
     private Context mContext;
     private ViewGroup surfaceContainer;                     //视频加载块
     private ProgressBar progressBarLoading;                 //缓冲播放前加载
@@ -47,12 +56,19 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private SeekBar exoProgress;                            //播放进度
     private ProgressBar exoBottomProgressbar;               //底部的progressbar;
     private ImageView ivPause;                              //暂停按钮
+    private ImageView ivToPause;                            //点击暂停按钮
+    private ImageView ivFullscreen;                         //全屏按钮
+    private ImageView ivVideoBg;                            //视频背景
 
     private boolean mDragging;                              //用来表示SeekBar是否在拖动中。
     private boolean mTouched;                               //用来表示控制状态
     private boolean mPausing;                               //是否停止播放
     private StringBuilder formatBuilder = new StringBuilder();
     private Formatter formatter = new Formatter(formatBuilder, Locale.getDefault());
+
+    private int mDefaultHeight = -1;                        //用于保存全屏前的高度
+    private String mUrl;                                    //保存要播放的URL;
+    private String mImageUrl;                               //视频背景URL;
 
     private AudioManager.OnAudioFocusChangeListener mAudioFocusChangeListener;
     public ExoPlayerLayout(Context context) {
@@ -85,6 +101,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         exoBottomProgressbar = (ProgressBar) findViewById(R.id.exo_bottom_progressbar);
         ivPause = (ImageView) findViewById(R.id.iv_pause);
         ivPause.setOnClickListener(this);
+        ivToPause = (ImageView) findViewById(R.id.iv_to_pause);
+        ivToPause.setOnClickListener(this);
+        ivFullscreen = (ImageView) findViewById(R.id.fullscreen);
+        ivFullscreen.setOnClickListener(this);
+        ivVideoBg = (ImageView) findViewById(R.id.iv_video_bg);
         setUIState(UI_VIDEO_STATE_INIT);
     }
 
@@ -100,8 +121,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      * 完成播放,清除ExoPlayerLayout有关的播放设置
      */
     public void eventCompletPlay() {
-        removeCallbacks(touchRunnable);
+        setUIState(ExoPlayerLayout.UI_VIDEO_PAUSING);
         removeCallbacks(updateProgressRunnable);
+        removeCallbacks(touchRunnable);
         removeTextureView();
         removeSupportAudio();
     }
@@ -110,9 +132,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      * 准备播放,先移除掉上一个TextureView，添加TextureView,添加音频保存这个ExoPlayerLayout
      */
     public void eventPreparePlay() {
-        //首先清除其它播放，让它恢复播放前的view
-        ExoPlayerManager.getInstance().releasePlayer();
         ExoPlayerLayoutManager.getInstance().completeAll();
+        ExoPlayerManager.getInstance().releasePlayer();
+        //首先清除其它播放，让它恢复播放前的view
         initTextureView();
         addTextureView();
         addSupportAudio();
@@ -165,7 +187,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private void initTextureView() {
         ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
         exoPlayerManager.setTextureView(new TextureView(mContext));
-
     }
 
     /**
@@ -197,7 +218,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     /**
      * 释放exoplayer和ExoplayerLayout的相关播放设置 eventCompletPlay();
      */
-    public static void releaseAllVideos() {
+    public void releaseAllVideos() {
         ExoPlayerManager.getInstance().releasePlayer();
         ExoPlayerLayoutManager.getInstance().completeAll();
     }
@@ -220,11 +241,13 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             case UI_VIDEO_PAUSING:
                 uiStatePause();
                 break;
-            case UI_VIDEO_END_PLAY:
+            case UI_VIDEO_FINISH:
+                uiStateFinish();
                 break;
             case UI_VIDEO_TOUCHED:
                 uiStateTouched();
                 break;
+
             default:
                 break;
         }
@@ -239,17 +262,23 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         exoLayoutBottom.setVisibility(View.INVISIBLE);
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
         ivPause.setVisibility(View.INVISIBLE);
+        ivToPause.setVisibility(View.INVISIBLE);
+        ivVideoBg.setVisibility(View.VISIBLE);
+        Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
     }
 
     /**
      * 视频播放缓冲状态
      */
     private void uiStateBuffering() {
+        ExoPlayerManager.getInstance().setExoPlayWhenRead(true);
         ivStart.setVisibility(View.INVISIBLE);
         progressBarLoading.setVisibility(View.VISIBLE);
         exoLayoutBottom.setVisibility(View.INVISIBLE);
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
         ivPause.setVisibility(View.INVISIBLE);
+        ivToPause.setVisibility(View.INVISIBLE);
+        ivVideoBg.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -257,11 +286,13 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      */
     private void uiStateReady() {
        if(!mTouched && !mPausing) {
+           ivVideoBg.setVisibility(View.INVISIBLE);
            ivStart.setVisibility(View.INVISIBLE);
            progressBarLoading.setVisibility(View.INVISIBLE);
            exoLayoutBottom.setVisibility(View.INVISIBLE);
            exoBottomProgressbar.setVisibility(View.VISIBLE);
            ivPause.setVisibility(View.INVISIBLE);
+           ivToPause.setVisibility(View.INVISIBLE);
        }
     }
 
@@ -269,11 +300,27 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      * 视频播放状态：触摸状态
      */
     private void uiStateTouched() {
+        ivVideoBg.setVisibility(View.INVISIBLE);
         ivStart.setVisibility(View.INVISIBLE);
         progressBarLoading.setVisibility(View.INVISIBLE);
         exoLayoutBottom.setVisibility(View.VISIBLE);
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
         ivPause.setVisibility(View.INVISIBLE);
+        ivToPause.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * 视频播放状态：完成状态
+     */
+    private void uiStateFinish() {
+        ExoPlayerManager.getInstance().setExoPlayWhenRead(false);
+        ivStart.setVisibility(View.INVISIBLE);
+        progressBarLoading.setVisibility(View.INVISIBLE);
+        exoLayoutBottom.setVisibility(View.VISIBLE);
+        exoBottomProgressbar.setVisibility(View.INVISIBLE);
+        ivPause.setVisibility(View.INVISIBLE);
+        ivToPause.setVisibility(View.INVISIBLE);
+        ivVideoBg.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -287,6 +334,8 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         exoLayoutBottom.setVisibility(View.INVISIBLE);
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
         ivPause.setVisibility(View.VISIBLE);
+        ivToPause.setVisibility(View.INVISIBLE);
+        ivVideoBg.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -388,23 +437,78 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         switch (view.getId()) {
             //开始播放
             case R.id.start:
-                setUIState(UI_VIDEO_STATE_Buffering);
-                surfaceContainer.setOnTouchListener(surfaceListener);
-                surfaceContainer.setOnClickListener(this);
-                if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
-                    eventPreparePlay();
-                    ExoPlayerManager.getInstance().preparePlayer(mContext, ExoPlayerManager.getInstance().getUrl());
-                } else {
-                    ExoPlayerManager.getInstance().getSimpleExoPlayer().setPlayWhenReady(true);
-                }
-
+                clickToStart();
                 break;
+            //暂停：点击播放
             case R.id.iv_pause:
                 mPausing = false;
-                ExoPlayerManager.getInstance().setExoPlayWhenRead(true);
-                setUIState(UI_VIDEO_STATE_Buffering);
+                mTouched = false;
+                if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
+                    clickToStart();
+                } else {
+                    ExoPlayerManager.getInstance().setExoPlayWhenRead(true);
+                    setUIState(UI_VIDEO_PLAYING);
+                }
+                break;
+            //暂停：点击播放
+            case R.id.iv_to_pause:
+                mPausing = true;
+                mTouched = false;
+                if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
+                    clickToStart();
+                } else {
+                    setUIState(UI_VIDEO_PAUSING);
+                }
+                break;
+            //全屏或者恢复原来的高度
+            case R.id.fullscreen:
+                //全屏
+                if(mDefaultHeight < 0) {
+                    ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_not_full_screen);
+                    mDefaultHeight = getHeight();
+                    fullVideo();
+                } else {
+                    ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_full_screen);
+                    //恢复原来的高度
+                    mDefaultHeight = -1;
+                    notFullVideo();
+                }
                 break;
         }
+    }
+
+    /**
+     * 开始播放视频
+     */
+    private void clickToStart() {
+        if(TextUtils.isEmpty(mUrl)) {
+            Toast.makeText(mContext, "播放的地址不得为空", Toast.LENGTH_SHORT).show();
+        }
+        ExoPlayerManager.getInstance().setUrl(mUrl);
+        setUIState(UI_VIDEO_STATE_Buffering);
+        surfaceContainer.setOnTouchListener(surfaceListener);
+        surfaceContainer.setOnClickListener(this);
+        if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
+            eventPreparePlay();
+            ExoPlayerManager.getInstance().preparePlayer(mContext, ExoPlayerManager.getInstance().getUrl());
+        }
+    }
+
+    /**
+     * 全屏操作，横屏
+     */
+    private void fullVideo() {
+        ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+    /**
+     * 恢复竖屏
+     */
+    public void notFullVideo() {
+        ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                mDefaultHeight));
     }
 
     /**
@@ -444,6 +548,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private OnTouchListener surfaceListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+            if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != ExoPlayerLayout.this) {
+              return false;
+            }
             removeCallbacks(touchRunnable);
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_UP:
@@ -466,4 +573,26 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         }
     };
 
+    public int getDefaultHeight() {
+        return mDefaultHeight;
+    }
+
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public void setUrl(String url) {
+        this.mUrl = url;
+    }
+
+    public String getImageUrl() {
+        return mImageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.mImageUrl = imageUrl;
+        if(null != ivVideoBg && !TextUtils.isEmpty(mImageUrl)) {
+            Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
+        }
+    }
 }

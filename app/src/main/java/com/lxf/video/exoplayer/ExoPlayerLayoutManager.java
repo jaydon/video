@@ -51,9 +51,43 @@ public class ExoPlayerLayoutManager {
             mSecondExoPlayer.eventCompletPlay();
             mSecondExoPlayer = null;
         }
-        if (mSecondExoPlayer != null) {
-            mSecondExoPlayer.eventCompletPlay();
-            mSecondExoPlayer = null;
+        if (mFirstExoPlayer != null) {
+            mFirstExoPlayer.eventCompletPlay();
+            mFirstExoPlayer = null;
+        }
+    }
+
+    /**
+     * 处理返回事件，如果是全屏则返回true，并恢复原型；
+     * @return 如果是全屏则返回true，并恢复原型；返回false，不处理任何事伯
+     */
+    public boolean handleBack() {
+        ExoPlayerLayout exoPlayerLayout = getCurrentJcvd();
+        if(null != exoPlayerLayout && exoPlayerLayout.getDefaultHeight() >= 0) {
+            exoPlayerLayout.notFullVideo();
+            return  true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 處理暂停状态
+     */
+    public void handlePausingUI() {
+        ExoPlayerLayout exoPlayerLayout = getCurrentJcvd();
+        if(null != exoPlayerLayout) {
+            exoPlayerLayout.setUIState(ExoPlayerLayout.UI_VIDEO_PAUSING);
+        }
+    }
+
+    /**
+     * 释放exoplayer和ExoplayerLayout的相关播放设置 eventCompletPlay();
+     */
+    public void releaseAllVideos() {
+        ExoPlayerLayout exoPlayerLayout = getCurrentJcvd();
+        if(null != exoPlayerLayout) {
+            exoPlayerLayout.releaseAllVideos();
         }
     }
 }

@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.lxf.video.R;
 import com.lxf.video.exoplayer.ExoPlayerLayout;
+import com.lxf.video.exoplayer.ExoPlayerLayoutManager;
 import com.lxf.video.exoplayer.ExoPlayerManager;
 
 /**
@@ -23,7 +24,8 @@ public class ExoPlayerLayoutActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exoplayer_layout);
         exoPlayerLayout = (ExoPlayerLayout) findViewById(R.id.exo_player_layout);
-        ExoPlayerManager.getInstance().setUrl(path);
+        exoPlayerLayout.setUrl(path);
+        exoPlayerLayout.setImageUrl("http://img4.jiecaojingxuan.com/2016/8/17/bd7ffc84-8407-4037-a078-7d922ce0fb0f.jpg");
     }
 
     @Override
@@ -40,6 +42,14 @@ public class ExoPlayerLayoutActivity extends AppCompatActivity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ExoPlayerLayout.releaseAllVideos();
+        ExoPlayerLayoutManager.getInstance().releaseAllVideos();
     }
+
+    @Override
+    public void onBackPressed() {
+        if(!ExoPlayerLayoutManager.getInstance().handleBack()) {
+            super.onBackPressed();
+        }
+    }
+
 }

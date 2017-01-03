@@ -8,7 +8,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
-import android.view.Surface;
 import android.view.TextureView;
 
 import com.danikula.videocache.HttpProxyCacheServer;
@@ -62,7 +61,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
         mMediaHandlerThread = new HandlerThread(TAG);
         mMediaHandlerThread.start();
         mMediaHandler = new MediaHandler(mMediaHandlerThread.getLooper());
-        mainHandler = new Handler();
+        mainHandler = new Handler(Looper.getMainLooper());
     }
 
     /**
@@ -114,7 +113,6 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     private void clearExoPlayer() {
         if(null != mSimpleExoPlayer) {
             mSimpleExoPlayer.release();
-            mTextureView = null;
             mSurfaceTexture = null;
             mSimpleExoPlayer = null;
             mUrl = null;

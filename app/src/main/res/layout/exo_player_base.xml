@@ -9,6 +9,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <ImageView
+        android:id="@+id/iv_video_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"/>
+
     <!--底部加载时间-->
     <LinearLayout
         android:id="@+id/exo_layout_bottom"
@@ -57,7 +63,7 @@
             android:layout_height="fill_parent"
             android:paddingRight="16dp"
             android:scaleType="center"
-            android:src="@mipmap/exo_layout_full_screen" />
+            android:background="@mipmap/exo_layout_full_screen" />
     </LinearLayout>
 
     <!--缓冲加载-->
@@ -80,7 +86,7 @@
         android:layout_gravity="center_vertical"
         android:src="@drawable/exo_layout_start_click" />
 
-    <!--暂停按钮-->
+    <!--暂停按钮，点击后播放-->
     <ImageView
         android:id="@+id/iv_pause"
         android:layout_width="60dp"
@@ -89,6 +95,16 @@
         android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"
         android:src="@drawable/exo_layout_start_click" />
+
+    <!--暂停按钮，点击后暂停-->
+    <ImageView
+        android:id="@+id/iv_to_pause"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/exo_layout_pause_selector" />
 
     <!--底部加载条-->
     <ProgressBar

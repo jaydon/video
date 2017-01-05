@@ -538,7 +538,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      */
     @SuppressWarnings("unchecked")
     private void fullVideo() {
-        ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
         Constructor<ExoPlayerLayout> constructor = null;
         surfaceContainer.removeView(ExoPlayerManager.getInstance().getTextureView());

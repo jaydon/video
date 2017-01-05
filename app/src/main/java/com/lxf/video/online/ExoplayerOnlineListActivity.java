@@ -1,5 +1,6 @@
 package com.lxf.video.online;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -150,4 +151,8 @@ public class ExoplayerOnlineListActivity extends AppCompatActivity {
         mAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
 }

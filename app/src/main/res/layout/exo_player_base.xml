@@ -13,7 +13,8 @@
         android:id="@+id/iv_video_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"/>
+        android:scaleType="fitXY"
+        android:visibility="invisible"/>
 
     <!--底部加载时间-->
     <LinearLayout

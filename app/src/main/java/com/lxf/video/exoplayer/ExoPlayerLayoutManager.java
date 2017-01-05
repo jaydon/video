@@ -62,9 +62,8 @@ public class ExoPlayerLayoutManager {
      * @return 如果是全屏则返回true，并恢复原型；返回false，不处理任何事伯
      */
     public boolean handleBack() {
-        ExoPlayerLayout exoPlayerLayout = getCurrentJcvd();
-        if(null != exoPlayerLayout && exoPlayerLayout.getDefaultHeight() >= 0) {
-            exoPlayerLayout.notFullVideo();
+        if(null != getSecondFloor() ) {
+            getFirstFloor().notFullVideo();
             return  true;
         } else {
             return false;

@@ -10,6 +10,7 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.view.Surface;
 import android.view.TextureView;
+import android.widget.Toast;
 
 import com.danikula.videocache.HttpProxyCacheServer;
 import com.google.android.exoplayer2.C;
@@ -33,6 +34,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
@@ -45,7 +47,7 @@ import com.lxf.video.VideoApplication;
  * Date: 2016-12-27
  * Time: 10:14
  */
-public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlayer.VideoListener, TextureView.SurfaceTextureListener{
+public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlayer.VideoListener, TextureView.SurfaceTextureListener, DefaultBandwidthMeter.EventListener{
     private String TAG = ExoPlayerManager.class.getSimpleName();
     private static ExoPlayerManager mInstance;
     private final static int MSG_PREPARE = 1;                          //准备MEDIA
@@ -56,13 +58,14 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     private SimpleExoPlayer mSimpleExoPlayer;
     private TextureView mTextureView;                                  //播放的layout 做统一管理，播放前需要remove掉旧的
     private String mUrl;
-    private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
+    private DefaultBandwidthMeter BANDWIDTH_METER;
     private SurfaceTexture mSurfaceTexture;                            //保存SurfaceTexture;
     private ExoPlayerManager() {
         mMediaHandlerThread = new HandlerThread(TAG);
         mMediaHandlerThread.start();
         mMediaHandler = new MediaHandler(mMediaHandlerThread.getLooper());
         mainHandler = new Handler(Looper.getMainLooper());
+        BANDWIDTH_METER = new DefaultBandwidthMeter(mainHandler, this);
     }
 
     /**
@@ -114,6 +117,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
      */
     private void clearExoPlayer() {
         if(null != mSimpleExoPlayer) {
+            mSimpleExoPlayer.clearVideoSurface();
             mSimpleExoPlayer.release();
             mSimpleExoPlayer = null;
             mUrl = null;
@@ -198,6 +202,17 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
         }
     }
 
+    /**
+     * {@link com.google.android.exoplayer2.upstream.BandwidthMeter.EventListener}
+     * @param elapsedMs 传输时间
+     * @param bytes 传输的带宽
+     * @param bitrate 平均宽
+     */
+    @Override
+    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        Toast.makeText(VideoApplication.getContext(), "平均比特率 ：" + bitrate, Toast.LENGTH_SHORT).show();
+    }
+
     class MediaHandler extends Handler {
         public MediaHandler(Looper looper) {
             super(looper);
@@ -267,7 +282,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         //播放完成
-        if(playbackState == ExoPlayer.STATE_ENDED) {
+        if( playbackState == ExoPlayer.STATE_ENDED) {
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -297,7 +312,12 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-        ExoPlayerLayoutManager.getInstance().getCurrentJcvd().setUIState(ExoPlayerLayout.UI_VIDEO_STATE_INIT);
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                ExoPlayerLayoutManager.getInstance().getCurrentJcvd().setUIState(ExoPlayerLayout.UI_VIDEO_STATE_INIT);
+            }
+        });
     }
 
     @Override

@@ -70,7 +70,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private StringBuilder formatBuilder = new StringBuilder();
     private Formatter formatter = new Formatter(formatBuilder, Locale.getDefault());
 
-    private int mDefaultHeight = -1;                        //用于保存全屏前的高度
     private ExoPlayerLayout mFullScreenExoPlayerLayout;     //用于保存全屏的ExoPlayerLayout
     private String mUrl;                                    //保存要播放的URL;
     private String mImageUrl;                               //视频背景URL;
@@ -127,9 +126,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      */
     public void eventCompletPlay() {
         setUIState(ExoPlayerLayout.UI_VIDEO_PAUSING);
+        removeTextureView(true);
         removeCallbacks(updateProgressRunnable);
         removeCallbacks(touchRunnable);
-        removeTextureView();
         removeSupportAudio();
     }
 
@@ -137,8 +136,8 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      * 准备播放,先移除掉上一个TextureView，添加TextureView,添加音频保存这个ExoPlayerLayout
      */
     public void eventPreparePlay() {
-        ExoPlayerLayoutManager.getInstance().completeAll();
         ExoPlayerManager.getInstance().releasePlayer();
+        ExoPlayerLayoutManager.getInstance().completeAll();
         //首先清除其它播放，让它恢复播放前的view
         initTextureView();
         addTextureView();
@@ -210,14 +209,14 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     /**
      * 移除掉上一个TextureView
      */
-    private void removeTextureView() {
+    private void removeTextureView(boolean isClear) {
         ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
         TextureView textureView = exoPlayerManager.getTextureView();
         if(null != textureView) {
-            if(null != textureView.getParent()) {
-                ((ViewGroup)textureView.getParent()).removeView(textureView);
+            surfaceContainer.removeView(textureView);
+            if(isClear) {
+                ExoPlayerManager.getInstance().setTextureView(null);
             }
-            exoPlayerManager.setTextureView(null);
         }
     }
 
@@ -278,8 +277,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         exoBottomProgressbar.setVisibility(View.INVISIBLE);
         ivPause.setVisibility(View.INVISIBLE);
         ivToPause.setVisibility(View.INVISIBLE);
-        ivVideoBg.setVisibility(View.VISIBLE);
-        Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
+        if(null == ExoPlayerLayoutManager.getInstance().getFirstFloor()) {
+            ivVideoBg.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -471,13 +471,13 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             //全屏或者恢复原来的高度
             case R.id.fullscreen:
                 //全屏
-                if(mDefaultHeight < 0) {
-                    ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_not_full_screen);
+                if(null == ExoPlayerLayoutManager.getInstance().getSecondFloor()) {
+//                    ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_not_full_screen);
                     fullVideo();
                 } else {
-                    ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_full_screen);
+//                    ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_full_screen);
                     //恢复原来的高度
-                    notFullVideo();
+                    ExoPlayerLayoutManager.getInstance().handleBack();
                 }
                 break;
         }
@@ -492,12 +492,19 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         }
         ExoPlayerManager.getInstance().setUrl(mUrl);
         setUIState(UI_VIDEO_STATE_BUFFERING);
-        surfaceContainer.setOnTouchListener(surfaceListener);
-        surfaceContainer.setOnClickListener(this);
+        setSurfaceContainerClick();
         if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
             eventPreparePlay();
             ExoPlayerManager.getInstance().preparePlayer(mContext, ExoPlayerManager.getInstance().getUrl());
         }
+    }
+
+    /**
+     * 设置视频可点击
+     */
+    public void setSurfaceContainerClick() {
+        surfaceContainer.setOnTouchListener(surfaceListener);
+        surfaceContainer.setOnClickListener(this);
     }
 
     /**
@@ -531,7 +538,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      */
     @SuppressWarnings("unchecked")
     private void fullVideo() {
-        mDefaultHeight = getHeight();
         ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
         Constructor<ExoPlayerLayout> constructor = null;
@@ -542,9 +548,13 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             decorView.addView(mFullScreenExoPlayerLayout, lp);
+            ExoPlayerLayoutManager.getInstance().setSecondFloor(mFullScreenExoPlayerLayout);
+            mFullScreenExoPlayerLayout.setUIState(UI_VIDEO_PLAYING);
+            mFullScreenExoPlayerLayout.updateProgress();
             mFullScreenExoPlayerLayout.setUrl(mUrl);
             mFullScreenExoPlayerLayout.setImageUrl(mImageUrl);
-            mFullScreenExoPlayerLayout.addView(ExoPlayerManager.getInstance().getTextureView());
+            mFullScreenExoPlayerLayout.addTextureView();
+            mFullScreenExoPlayerLayout.setSurfaceContainerClick();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -553,12 +563,12 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      * 恢复竖屏
      */
     public void notFullVideo() {
-        mDefaultHeight = -1;
         ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        mFullScreenExoPlayerLayout.removeView(ExoPlayerManager.getInstance().getTextureView());
-        surfaceContainer.addView(ExoPlayerManager.getInstance().getTextureView());
+        ExoPlayerLayoutManager.getInstance().getSecondFloor().removeTextureView(false);
+        ExoPlayerLayoutManager.getInstance().getFirstFloor().addTextureView();
         ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
         decorView.removeView(mFullScreenExoPlayerLayout);
+        ExoPlayerLayoutManager.getInstance().setSecondFloor(null);
         mFullScreenExoPlayerLayout = null;
     }
 
@@ -624,10 +634,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         }
     };
 
-    public int getDefaultHeight() {
-        return mDefaultHeight;
-    }
-
     public String getUrl() {
         return mUrl;
     }
@@ -643,7 +649,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     public void setImageUrl(String imageUrl) {
         this.mImageUrl = imageUrl;
         if(null != ivVideoBg && !TextUtils.isEmpty(mImageUrl)) {
-            Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
+            if(null == ExoPlayerLayoutManager.getInstance().getFirstFloor()) {
+                Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
+            }
         }
     }
 }

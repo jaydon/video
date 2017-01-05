@@ -654,4 +654,12 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             }
         }
     }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if(this == ExoPlayerLayoutManager.getInstance().getCurrentJcvd() && null != ivVideoBg) {
+            Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
+        }
+    }
 }

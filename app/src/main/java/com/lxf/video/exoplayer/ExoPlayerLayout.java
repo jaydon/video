@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.TextureView;
@@ -25,6 +26,11 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.TrackGroup;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.lxf.video.R;
 import com.lxf.video.VideoApplication;
 
@@ -503,6 +509,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                 break;
             //视频画质选择
             case R.id.tv_video_track:
+                showVideoImageQulity();
                 break;
         }
     }
@@ -557,6 +564,38 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                 simpleExoPlayer.seekTo(0L);
                 setUIState(UI_VIDEO_PLAYING);
                 updateProgress();
+            }
+        }
+    }
+
+    /**
+     * 弹出可选择的视频画质
+     */
+    private void showVideoImageQulity() {
+        ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
+        if(null == exoPlayerManager || null == exoPlayerManager.getSimpleExoPlayer()) {
+            return;
+        }
+        DefaultTrackSelector defaultTrackSelector = exoPlayerManager.getDefaultTrackSelector();
+        TrackSelection.Factory factory = exoPlayerManager.getVideoTrackSelectionFactory();
+        if(null == defaultTrackSelector || null == factory) {
+            return;
+        }
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo =  defaultTrackSelector.getCurrentMappedTrackInfo();
+        for(int i = 0; i < mappedTrackInfo.length; i++) {
+            if(exoPlayerManager.getSimpleExoPlayer().getRendererType(i) ==
+                    C.TRACK_TYPE_VIDEO) {
+                TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(i);
+                StringBuilder sb = new StringBuilder();
+                for(int j = 0; j < trackGroupArray.length; j++) {
+                    TrackGroup trackGroup = trackGroupArray.get(j);
+                    for(int k = 0; k < trackGroup.length; k++) {
+                        Format format = trackGroup.getFormat(k);
+                        sb.append(format.width + "*" + format.height + " ");
+                    }
+                }
+                Log.e("showVideoImageQulity", sb.toString());
+                break;
             }
         }
     }
@@ -644,8 +683,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_UP:
                     mTouched = true;
-                    setUIState(UI_VIDEO_TOUCHED);
-                    ExoPlayerLayout.this.postDelayed(touchRunnable, DEFAULT_SHOW_TIMEOUT_MS);
+                    SimpleExoPlayer simpleExoPlayer = ExoPlayerManager.getInstance().getSimpleExoPlayer();
+                    if(null != simpleExoPlayer && simpleExoPlayer.getPlayWhenReady()) {
+                        setUIState(UI_VIDEO_TOUCHED);
+                        ExoPlayerLayout.this.postDelayed(touchRunnable, DEFAULT_SHOW_TIMEOUT_MS);
+                    }
                     break;
             }
             return false;

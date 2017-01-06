@@ -458,4 +458,13 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     public Format getVideoSelectFormat() {
         return mVideoSelectFormat;
     }
+    @Nullable
+    public DefaultTrackSelector getDefaultTrackSelector() {
+        return mDefaultTrackSelector;
+    }
+
+    @Nullable
+    public TrackSelection.Factory getVideoTrackSelectionFactory() {
+        return mVideoTrackSelectionFactory;
+    }
 }

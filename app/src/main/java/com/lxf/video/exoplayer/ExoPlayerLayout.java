@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.media.AudioManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -83,7 +82,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private String mUrl;                                    //保存要播放的URL;
     private String mImageUrl;                               //视频背景URL;
 
-    private AudioManager.OnAudioFocusChangeListener mAudioFocusChangeListener;
     public ExoPlayerLayout(Context context) {
         super(context);
         init(context);
@@ -142,7 +140,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         ExoPlayerManager.getInstance().setTextureView(null);
         removeCallbacks(updateProgressRunnable);
         removeCallbacks(touchRunnable);
-        removeSupportAudio();
+        ExoPlayerAudioSupport.getInstance(mContext.getApplicationContext()).removeSupportAudio();
     }
 
     /**
@@ -153,56 +151,15 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         //首先清除其它播放，让它恢复播放前的view
         initTextureView();
         addTextureView();
-        addSupportAudio();
+        ExoPlayerAudioSupport.getInstance(mContext.getApplicationContext()).addSupportAudio();
         ExoPlayerLayoutManager.getInstance().setFirstFloor(this);
-    }
-
-    /**
-     * 添加支持音频
-     */
-    private void addSupportAudio() {
-        AudioManager audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-        mAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
-            @Override
-            public void onAudioFocusChange(int focusChange) {
-                switch (focusChange) {
-                    case AudioManager.AUDIOFOCUS_GAIN:
-                        break;
-                    case AudioManager.AUDIOFOCUS_LOSS:
-                        releaseAllVideos();
-                        break;
-                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                        ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
-                        SimpleExoPlayer simpleExoPlayer = exoPlayerManager.getSimpleExoPlayer();
-                        //暂停播放
-                        if(null != simpleExoPlayer && simpleExoPlayer.getPlaybackState() == ExoPlayer.STATE_READY) {
-                            simpleExoPlayer.setPlayWhenReady(false);
-                        }
-                        break;
-                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                        break;
-                }
-            }
-        };
-        audioManager.requestAudioFocus(mAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-    }
-
-    /**
-     * 播放完成，关掉audio
-     */
-    private void removeSupportAudio() {
-        if(null != mAudioFocusChangeListener) {
-            AudioManager audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-            audioManager.abandonAudioFocus(mAudioFocusChangeListener);
-        }
     }
 
     /**
      * 初始化播放view
      */
     private void initTextureView() {
-        ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
-        exoPlayerManager.setTextureView(new TextureView(mContext));
+        ExoPlayerManager.getInstance().setTextureView(new TextureView(mContext));
     }
 
     /**
@@ -725,6 +682,10 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         }
     }
 
+    public ExoPlayerLayout getFullScreenExoPlayerLayout() {
+        return mFullScreenExoPlayerLayout;
+    }
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -732,9 +693,5 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             ivVideoBg.setVisibility(View.VISIBLE);
             Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
         }
-    }
-
-    public ExoPlayerLayout getFullScreenExoPlayerLayout() {
-        return mFullScreenExoPlayerLayout;
     }
 }

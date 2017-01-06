@@ -8,6 +8,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.widget.Toast;
@@ -34,7 +35,6 @@ import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
@@ -47,7 +47,7 @@ import com.lxf.video.VideoApplication;
  * Date: 2016-12-27
  * Time: 10:14
  */
-public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlayer.VideoListener, TextureView.SurfaceTextureListener, DefaultBandwidthMeter.EventListener{
+public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlayer.VideoListener, DefaultBandwidthMeter.EventListener{
     private String TAG = ExoPlayerManager.class.getSimpleName();
     private static ExoPlayerManager mInstance;
     private final static int MSG_PREPARE = 1;                          //准备MEDIA
@@ -60,12 +60,16 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     private String mUrl;
     private DefaultBandwidthMeter BANDWIDTH_METER;
     private SurfaceTexture mSurfaceTexture;                            //保存SurfaceTexture;
+    private TrackSelection.Factory mVideoTrackSelectionFactory;
+    private DefaultTrackSelector mDefaultTrackSelector;
     private ExoPlayerManager() {
         mMediaHandlerThread = new HandlerThread(TAG);
         mMediaHandlerThread.start();
         mMediaHandler = new MediaHandler(mMediaHandlerThread.getLooper());
         mainHandler = new Handler(Looper.getMainLooper());
         BANDWIDTH_METER = new DefaultBandwidthMeter(mainHandler, this);
+        mVideoTrackSelectionFactory = new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
+        mDefaultTrackSelector = new DefaultTrackSelector(mVideoTrackSelectionFactory);
     }
 
     /**
@@ -95,7 +99,6 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
         if(TextUtils.isEmpty(url)) {
             return;
         }
-        releasePlayer();
         ExoPlayerPrepareData exoPlayerPrepareData = new ExoPlayerPrepareData(context, url);
         Message msg = new Message();
         msg.what = MSG_PREPARE;
@@ -131,15 +134,14 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
         if(null == exoPlayerPrepareData) {
             return;
         }
-        TrackSelection.Factory videoTrackSelectionFactory =
-                new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-        LoadControl loadControl = new DefaultLoadControl();
-        mSimpleExoPlayer = ExoPlayerFactory.newSimpleInstance(exoPlayerPrepareData.getContext(), trackSelector, loadControl);
-        //把player通过surfaceTextureListener联系在一起
-        if(null != mSurfaceTexture) {
-            mSimpleExoPlayer.setVideoSurface(new Surface(mSurfaceTexture));
+        if(null == mSurfaceTexture) {
+            return;
         }
+
+        LoadControl loadControl = new DefaultLoadControl();
+        mSimpleExoPlayer = ExoPlayerFactory.newSimpleInstance(exoPlayerPrepareData.getContext(), mDefaultTrackSelector, loadControl);
+        //把player通过surfaceTextureListener联系在一起
+        mSimpleExoPlayer.setVideoSurface(new Surface(mSurfaceTexture));
         HttpProxyCacheServer proxy = VideoApplication.getProxy(VideoApplication.getContext());
         //缓存控制
         String proxyUrl = proxy.getProxyUrl(exoPlayerPrepareData.getUrl());
@@ -227,7 +229,6 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
                     clearExoPlayer();
                     break;
                 case MSG_PREPARE:
-                    clearExoPlayer();
                     prepareExoPlayer((ExoPlayerPrepareData) msg.obj);
                     break;
             }
@@ -242,31 +243,6 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
                 ExoPlayerLayoutManager.getInstance().getCurrentJcvd().updateProgress();
             }
         });
-    }
-
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
-        if (mSurfaceTexture == null) {
-            mSurfaceTexture = surfaceTexture;
-            preparePlayer(mTextureView.getContext(), getUrl());
-        } else {
-            mTextureView.setSurfaceTexture(mSurfaceTexture);
-        }
-    }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
-
-    }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        return mSurfaceTexture == null;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
-
     }
 
     @Override
@@ -311,11 +287,16 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     }
 
     @Override
-    public void onPlayerError(ExoPlaybackException error) {
+    public void onPlayerError(final ExoPlaybackException error) {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                ExoPlayerLayoutManager.getInstance().getCurrentJcvd().setUIState(ExoPlayerLayout.UI_VIDEO_STATE_INIT);
+                Toast.makeText(VideoApplication.getContext(), error.getCause().toString(), Toast.LENGTH_SHORT).show();
+                Log.e("onPlayerError", error.getCause().toString());
+                ExoPlayerLayout exoPlayerLayout = ExoPlayerLayoutManager.getInstance().getCurrentJcvd();
+                if(null != exoPlayerLayout) {
+                    exoPlayerLayout.clickToStart();
+                }
             }
         });
     }
@@ -374,6 +355,43 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
 
     public void setTextureView(TextureView textureView) {
         this.mTextureView = textureView;
+        if(null != mTextureView) {
+            this.mTextureView.setSurfaceTextureListener(new  TextureView.SurfaceTextureListener() {
+
+                @Override
+                public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    if (mSurfaceTexture == null || ExoPlayerLayoutManager.getInstance().getFirstFloor().getFullScreenExoPlayerLayout() == null) {
+                        if(null != mSimpleExoPlayer) {
+                            mSimpleExoPlayer.clearVideoSurface();
+                            mSimpleExoPlayer.release();
+                        }
+                        if(null != mSurfaceTexture) {
+                            mSurfaceTexture.release();
+                            mSurfaceTexture = null;
+                        }
+                        mSurfaceTexture = surface;
+                        preparePlayer(mTextureView.getContext(), getUrl());
+                    } else {
+                        mTextureView.setSurfaceTexture(mSurfaceTexture);
+                    }
+                }
+
+                @Override
+                public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+                }
+
+                @Override
+                public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                    return false;
+                }
+
+                @Override
+                public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+                }
+            });
+        }
     }
 
     public String getUrl() {

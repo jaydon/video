@@ -48,11 +48,11 @@ public class ExoPlayerLayoutManager {
 
     public void completeAll() {
         if (mSecondExoPlayer != null) {
-            mSecondExoPlayer.eventCompletPlay();
+            mSecondExoPlayer.eventCompletePlay();
             mSecondExoPlayer = null;
         }
         if (mFirstExoPlayer != null) {
-            mFirstExoPlayer.eventCompletPlay();
+            mFirstExoPlayer.eventCompletePlay();
             mFirstExoPlayer = null;
         }
     }

@@ -7,7 +7,6 @@ import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.TextureView;
@@ -124,9 +123,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     /**
      * 完成播放,清除ExoPlayerLayout有关的播放设置
      */
-    public void eventCompletPlay() {
+    public void eventCompletePlay() {
         setUIState(ExoPlayerLayout.UI_VIDEO_PAUSING);
-        removeTextureView(true);
+        removeTextureView();
+        //释放掉SurfaceTexture
+        ExoPlayerManager.getInstance().setTextureView(null);
         removeCallbacks(updateProgressRunnable);
         removeCallbacks(touchRunnable);
         removeSupportAudio();
@@ -136,8 +137,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      * 准备播放,先移除掉上一个TextureView，添加TextureView,添加音频保存这个ExoPlayerLayout
      */
     public void eventPreparePlay() {
-        ExoPlayerManager.getInstance().releasePlayer();
-        ExoPlayerLayoutManager.getInstance().completeAll();
+        releaseAllVideos();
         //首先清除其它播放，让它恢复播放前的view
         initTextureView();
         addTextureView();
@@ -191,7 +191,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private void initTextureView() {
         ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
         exoPlayerManager.setTextureView(new TextureView(mContext));
-        exoPlayerManager.getTextureView().setSurfaceTextureListener(exoPlayerManager);
     }
 
     /**
@@ -209,14 +208,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     /**
      * 移除掉上一个TextureView
      */
-    private void removeTextureView(boolean isClear) {
+    private void removeTextureView() {
         ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
         TextureView textureView = exoPlayerManager.getTextureView();
         if(null != textureView) {
             surfaceContainer.removeView(textureView);
-            if(isClear) {
-                ExoPlayerManager.getInstance().setTextureView(null);
-            }
         }
     }
 
@@ -224,8 +220,8 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      * 释放exoplayer和ExoplayerLayout的相关播放设置 eventCompletPlay();
      */
     public void releaseAllVideos() {
-        ExoPlayerManager.getInstance().releasePlayer();
         ExoPlayerLayoutManager.getInstance().completeAll();
+        ExoPlayerManager.getInstance().releasePlayer();
     }
 
     /**
@@ -280,6 +276,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         if(null == ExoPlayerLayoutManager.getInstance().getFirstFloor()) {
             ivVideoBg.setVisibility(View.VISIBLE);
         }
+        Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
     }
 
     /**
@@ -486,14 +483,14 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     /**
      * 开始播放视频
      */
-    private void clickToStart() {
+    public void clickToStart() {
         if(TextUtils.isEmpty(mUrl)) {
             Toast.makeText(mContext, "播放的地址不得为空", Toast.LENGTH_SHORT).show();
         }
         ExoPlayerManager.getInstance().setUrl(mUrl);
         setUIState(UI_VIDEO_STATE_BUFFERING);
         setSurfaceContainerClick();
-        if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this) {
+        if(ExoPlayerLayoutManager.getInstance().getCurrentJcvd() != this || null == ExoPlayerManager.getInstance().getSimpleExoPlayer()) {
             eventPreparePlay();
             ExoPlayerManager.getInstance().preparePlayer(mContext, ExoPlayerManager.getInstance().getUrl());
         }
@@ -518,7 +515,12 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         } else {
             ExoPlayerManager exoPlayerManager = ExoPlayerManager.getInstance();
             SimpleExoPlayer simpleExoPlayer = exoPlayerManager.getSimpleExoPlayer();
-            Log.e("clickToPause", "duration : " + simpleExoPlayer.getDuration() + " currentPosition : " + simpleExoPlayer.getCurrentPosition());
+            if(null == simpleExoPlayer) {
+                ExoPlayerLayoutManager.getInstance().setFirstFloor(null);
+                ExoPlayerLayoutManager.getInstance().setSecondFloor(null);
+                clickToStart();
+                return;
+            }
             if(simpleExoPlayer.getDuration() - simpleExoPlayer.getCurrentPosition() >= 1000) {
                 exoPlayerManager.setExoPlayWhenRead(true);
                 setUIState(UI_VIDEO_PLAYING);
@@ -529,7 +531,6 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                 setUIState(UI_VIDEO_PLAYING);
                 updateProgress();
             }
-
         }
     }
 
@@ -541,7 +542,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
         Constructor<ExoPlayerLayout> constructor = null;
-        surfaceContainer.removeView(ExoPlayerManager.getInstance().getTextureView());
+        removeTextureView();
         try {
             constructor = (Constructor<ExoPlayerLayout>) ExoPlayerLayout.this.getClass().getConstructor(Context.class);
             mFullScreenExoPlayerLayout = constructor.newInstance(mContext);
@@ -564,12 +565,11 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
      */
     public void notFullVideo() {
         ((Activity)mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        ExoPlayerLayoutManager.getInstance().getSecondFloor().removeTextureView(false);
+        ExoPlayerLayoutManager.getInstance().getSecondFloor().removeTextureView();
         ExoPlayerLayoutManager.getInstance().getFirstFloor().addTextureView();
         ViewGroup decorView = (ViewGroup) ((Activity)mContext).findViewById(Window.ID_ANDROID_CONTENT);
         decorView.removeView(mFullScreenExoPlayerLayout);
         ExoPlayerLayoutManager.getInstance().setSecondFloor(null);
-        mFullScreenExoPlayerLayout = null;
     }
 
     /**
@@ -658,8 +658,13 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if(this == ExoPlayerLayoutManager.getInstance().getCurrentJcvd() && null != ivVideoBg) {
+        if(null != ivVideoBg) {
+            ivVideoBg.setVisibility(View.VISIBLE);
             Glide.with(VideoApplication.getContext()).load(mImageUrl).into(ivVideoBg);
         }
+    }
+
+    public ExoPlayerLayout getFullScreenExoPlayerLayout() {
+        return mFullScreenExoPlayerLayout;
     }
 }

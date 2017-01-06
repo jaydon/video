@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.lxf.video.R;
 import com.lxf.video.VideoApplication;
@@ -46,6 +47,8 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     public final static int UI_VIDEO_FINISH = 4;            //视频状态：播放完成状态
     public final static int UI_VIDEO_TOUCHED = 5;           //视频状态：播放状态，timeline等，属于触模后的一种动态
     public final static int UI_VIDEO_END = 6;               //播放结束，点击再度播放，则从头开始播放
+    public final static int UI_VIDEO_IMAGE_QUALITY = 7;     //视频播放画质，更新tvVideoTrack的文字,有两个地方调用，
+                                                            // 一个是ExoPlayer 的onTracksChanged，另一个是选择画质待开发中
     private static final int PROGRESS_BAR_MAX = 100;        //progress 最大值
     public static final int DEFAULT_SHOW_TIMEOUT_MS = 5000; //Touched状态多长时间消失
 
@@ -62,6 +65,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
     private ImageView ivToPause;                            //点击暂停按钮
     private ImageView ivFullscreen;                         //全屏按钮
     private ImageView ivVideoBg;                            //视频背景
+    private TextView tvVideoTrack;                          //视频画质选择
 
     private boolean mDragging;                              //用来表示SeekBar是否在拖动中。
     private boolean mTouched;                               //用来表示控制状态
@@ -109,6 +113,8 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         ivFullscreen = (ImageView) findViewById(R.id.fullscreen);
         ivFullscreen.setOnClickListener(this);
         ivVideoBg = (ImageView) findViewById(R.id.iv_video_bg);
+        tvVideoTrack = (TextView) findViewById(R.id.tv_video_track);
+        tvVideoTrack.setOnClickListener(this);
         setUIState(UI_VIDEO_STATE_INIT);
     }
 
@@ -258,6 +264,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             case UI_VIDEO_TOUCHED:
                 uiStateTouched();
                 break;
+            case UI_VIDEO_IMAGE_QUALITY:
+                uiStateImageQuality();
+                break;
             default:
                 break;
         }
@@ -305,6 +314,10 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
            exoBottomProgressbar.setVisibility(View.VISIBLE);
            ivPause.setVisibility(View.INVISIBLE);
            ivToPause.setVisibility(View.INVISIBLE);
+           //全屏状态下的缩小按钮
+           if(this == ExoPlayerLayoutManager.getInstance().getSecondFloor()) {
+               ivFullscreen.setBackgroundResource(R.mipmap.exo_layout_not_full_screen);
+           }
        }
     }
 
@@ -348,6 +361,17 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
         ivPause.setVisibility(View.VISIBLE);
         ivToPause.setVisibility(View.INVISIBLE);
         ivVideoBg.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * 视频状态：画质状态
+     */
+    private void uiStateImageQuality() {
+        Format format = ExoPlayerManager.getInstance().getVideoSelectFormat();
+        if(null != format) {
+            tvVideoTrack.setVisibility(View.VISIBLE);
+            tvVideoTrack.setText(format.width + "*" + format.height);
+        }
     }
 
     /**
@@ -477,6 +501,9 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
                     ExoPlayerLayoutManager.getInstance().handleBack();
                 }
                 break;
+            //视频画质选择
+            case R.id.tv_video_track:
+                break;
         }
     }
 
@@ -551,6 +578,7 @@ public class ExoPlayerLayout extends FrameLayout implements View.OnClickListener
             decorView.addView(mFullScreenExoPlayerLayout, lp);
             ExoPlayerLayoutManager.getInstance().setSecondFloor(mFullScreenExoPlayerLayout);
             mFullScreenExoPlayerLayout.setUIState(UI_VIDEO_PLAYING);
+            mFullScreenExoPlayerLayout.setUIState(UI_VIDEO_IMAGE_QUALITY);
             mFullScreenExoPlayerLayout.updateProgress();
             mFullScreenExoPlayerLayout.setUrl(mUrl);
             mFullScreenExoPlayerLayout.setImageUrl(mImageUrl);

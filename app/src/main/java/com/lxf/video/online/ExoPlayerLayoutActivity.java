@@ -4,11 +4,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.lxf.video.R;
 import com.lxf.video.exoplayer.ExoPlayerLayout;
 import com.lxf.video.exoplayer.ExoPlayerLayoutManager;
-import com.lxf.video.exoplayer.ExoPlayerManager;
 
 /**
  * 用于测试ExoPlayerLayout

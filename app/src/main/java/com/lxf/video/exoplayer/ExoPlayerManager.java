@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
@@ -19,12 +20,14 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -33,6 +36,7 @@ import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -62,6 +66,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
     private SurfaceTexture mSurfaceTexture;                            //保存SurfaceTexture;
     private TrackSelection.Factory mVideoTrackSelectionFactory;
     private DefaultTrackSelector mDefaultTrackSelector;
+    private Format mVideoSelectFormat;                                  //当前播放视频的画质
     private ExoPlayerManager() {
         mMediaHandlerThread = new HandlerThread(TAG);
         mMediaHandlerThread.start();
@@ -247,6 +252,42 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
 
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = mDefaultTrackSelector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo != null) {
+            boolean isSupport = true;
+            if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_VIDEO)
+                    == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                Log.e("onTracksChanged", "设备不支持视频播放");
+                isSupport = false;
+            }
+            if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_AUDIO)
+                    == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                Log.e("onTracksChanged", "设备不支持音频播放");
+                isSupport = false;
+            }
+            if(!isSupport) {
+                return;
+            }
+        }
+        for(int i = 0; i < trackGroups.length; i++) {
+            //取出当前播放的视频画质
+           if(null != mSimpleExoPlayer && mSimpleExoPlayer.getRendererType(i) == C.TRACK_TYPE_VIDEO) {
+               TrackGroup trackGroup = trackGroups.get(i);
+               if(trackGroup.length != 1) {
+                   return;
+               }
+               for(int j = 0; j < trackGroup.length; j++) {
+                   mVideoSelectFormat = trackGroup.getFormat(j);
+                   Log.e("onTracksChanged", mVideoSelectFormat.width + "*" + mVideoSelectFormat.height);
+                   mainHandler.post(new Runnable() {
+                       @Override
+                       public void run() {
+                           ExoPlayerLayoutManager.getInstance().getCurrentJcvd().setUIState(ExoPlayerLayout.UI_VIDEO_IMAGE_QUALITY);
+                       }
+                   });
+               }
+           }
+        }
 
     }
 
@@ -360,6 +401,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
 
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    //在列表里的，或者是第一次播放，先清除掉旧的SurfaceTexture，再添加到ExoPlayer
                     if (mSurfaceTexture == null || ExoPlayerLayoutManager.getInstance().getFirstFloor().getFullScreenExoPlayerLayout() == null) {
                         if(null != mSimpleExoPlayer) {
                             mSimpleExoPlayer.clearVideoSurface();
@@ -372,6 +414,7 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
                         mSurfaceTexture = surface;
                         preparePlayer(mTextureView.getContext(), getUrl());
                     } else {
+                        //用于全屏和恢复竖屏
                         mTextureView.setSurfaceTexture(mSurfaceTexture);
                     }
                 }
@@ -409,5 +452,10 @@ public class ExoPlayerManager  implements ExoPlayer.EventListener, SimpleExoPlay
         if(null != mSimpleExoPlayer) {
             mSimpleExoPlayer.setPlayWhenReady(playeWhenRead);
         }
+    }
+
+    @Nullable
+    public Format getVideoSelectFormat() {
+        return mVideoSelectFormat;
     }
 }
